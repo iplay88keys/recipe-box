@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/iplay88keys/recipe-box/pkg/api"
 	"github.com/iplay88keys/recipe-box/pkg/api/recipes"
+	"github.com/iplay88keys/recipe-box/pkg/api/users"
 	"github.com/iplay88keys/recipe-box/pkg/repositories"
 	"os"
 	"os/signal"
@@ -36,9 +37,10 @@ func main() {
 		panic(err)
 	}
 
-	recipesRepo := repositories.NewRecipeRepository(db)
+	recipesRepo := repositories.NewRecipesRepository(db)
 	ingredientsRepo := repositories.NewIngredientsRepository(db)
 	stepsRepo := repositories.NewStepsRepository(db)
+	usersRepo := repositories.NewUsersRepository(db)
 
 	mux.NewRouter()
 	a := api.New(&api.Config{
@@ -50,6 +52,11 @@ func main() {
 				recipesRepo.Get,
 				ingredientsRepo.GetForRecipe,
 				stepsRepo.GetForRecipe,
+			),
+			users.Signup(
+				usersRepo.ExistsByUsername,
+				usersRepo.ExistsByEmail,
+				usersRepo.Insert,
 			),
 		},
 	})

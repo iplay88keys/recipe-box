@@ -13,7 +13,7 @@ while test $# -gt 0; do
             skipUI=true
             ;;
         --skip-backend)
-            skipIntegration=true
+            skipBackend=true
             ;;
         --skip-integration)
             skipIntegration=true
@@ -40,6 +40,7 @@ if [[ "${skipUI}" = "false" ]]; then
     popd
 fi
 
+ginkgo_args=("")
 if [[ "${skipIntegration}" = "false" ]]; then
     ./scripts/start_database.sh > /dev/null 2>&1
 
@@ -49,9 +50,11 @@ if [[ "${skipIntegration}" = "false" ]]; then
     trap finish EXIT
 
     ./scripts/migrate_database.sh
+else
+    ginkgo_args+=("-skipPackage integration")
 fi
 
 if [[ "${skipBackend}" = "false" ]]; then
     echo "Running ginkgo"
-    ginkgo -r -p
+    ginkgo -r -p ${ginkgo_args[@]}
 fi

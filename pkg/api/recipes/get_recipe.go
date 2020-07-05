@@ -1,20 +1,22 @@
 package recipes
 
 import (
-	"encoding/json"
-	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/iplay88keys/recipe-box/pkg/api"
-	"github.com/iplay88keys/recipe-box/pkg/repositories"
-	"net/http"
-	"sort"
-	"strconv"
+    "encoding/json"
+    "fmt"
+    "net/http"
+    "sort"
+    "strconv"
+
+    "github.com/gorilla/mux"
+
+    "github.com/iplay88keys/recipe-box/pkg/api"
+    "github.com/iplay88keys/recipe-box/pkg/repositories"
 )
 
 type RecipeResponse struct {
-	repositories.Recipe
-	Ingredients []*repositories.Ingredient `json:"ingredients"`
-	Steps       []*repositories.Step       `json:"steps"`
+    repositories.Recipe
+    Ingredients []*repositories.Ingredient `json:"ingredients"`
+    Steps       []*repositories.Step       `json:"steps"`
 }
 
 type ByIngredientNumber []*repositories.Ingredient
@@ -34,54 +36,54 @@ type getIngredientsForRecipe func(recipeID int) ([]*repositories.Ingredient, err
 type getStepsForRecipe func(recipeID int) ([]*repositories.Step, error)
 
 func GetRecipe(getRecipe getRecipe, getIngredientsForRecipe getIngredientsForRecipe, getStepsForRecipe getStepsForRecipe) api.Endpoint {
-	return api.Endpoint{
-		Path:   "recipes/{id:[0-9]+}",
-		Method: http.MethodGet,
-		Handler: func(w http.ResponseWriter, r *http.Request) {
-			vars := mux.Vars(r)
-			recipeID, err := strconv.Atoi(vars["id"])
-			if err != nil {
-				fmt.Printf("Recipe endpoint missing id: %s", err.Error())
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
+    return api.Endpoint{
+        Path:   "recipes/{id:[0-9]+}",
+        Method: http.MethodGet,
+        Handler: func(w http.ResponseWriter, r *http.Request) {
+            vars := mux.Vars(r)
+            recipeID, err := strconv.Atoi(vars["id"])
+            if err != nil {
+                fmt.Printf("Recipe endpoint missing id: %s\n", err.Error())
+                w.WriteHeader(http.StatusInternalServerError)
+                return
+            }
 
-			recipe, err := getRecipe(recipeID)
-			if err != nil {
-				fmt.Printf("Error getting recipe: %s", err.Error())
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
+            recipe, err := getRecipe(recipeID)
+            if err != nil {
+                fmt.Printf("Error getting recipe: %s\n", err.Error())
+                w.WriteHeader(http.StatusInternalServerError)
+                return
+            }
 
-			recipeIngredients, err := getIngredientsForRecipe(recipeID)
-			if err != nil {
-				fmt.Printf("Error getting ingredients for recipe: %s", err.Error())
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
+            recipeIngredients, err := getIngredientsForRecipe(recipeID)
+            if err != nil {
+                fmt.Printf("Error getting ingredients for recipe: %s\n", err.Error())
+                w.WriteHeader(http.StatusInternalServerError)
+                return
+            }
 
-			recipeSteps, err := getStepsForRecipe(recipeID)
-			if err != nil {
-				fmt.Printf("Error getting steps for recipe: %s", err.Error())
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
+            recipeSteps, err := getStepsForRecipe(recipeID)
+            if err != nil {
+                fmt.Printf("Error getting steps for recipe: %s\n", err.Error())
+                w.WriteHeader(http.StatusInternalServerError)
+                return
+            }
 
-			sort.Sort(ByIngredientNumber(recipeIngredients))
-			sort.Sort(ByStepNumber(recipeSteps))
+            sort.Sort(ByIngredientNumber(recipeIngredients))
+            sort.Sort(ByStepNumber(recipeSteps))
 
-			recipeBytes, err := json.Marshal(&RecipeResponse{
-				Recipe:      *recipe,
-				Ingredients: recipeIngredients,
-				Steps:       recipeSteps,
-			})
-			if err != nil {
-				fmt.Printf("Error marshaling recipe: %s", err.Error())
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
+            recipeBytes, err := json.Marshal(&RecipeResponse{
+                Recipe:      *recipe,
+                Ingredients: recipeIngredients,
+                Steps:       recipeSteps,
+            })
+            if err != nil {
+                fmt.Printf("Error marshaling recipe: %s\n", err.Error())
+                w.WriteHeader(http.StatusInternalServerError)
+                return
+            }
 
-			api.LogWriteErr(w.Write(recipeBytes))
-		},
-	}
+            api.LogWriteErr(w.Write(recipeBytes))
+        },
+    }
 }

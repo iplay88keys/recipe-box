@@ -1,4 +1,4 @@
-package recipes_test
+package users_test
 
 import (
     "os"
@@ -8,9 +8,9 @@ import (
     . "github.com/onsi/gomega"
 )
 
-func TestRecipes(t *testing.T) {
+func TestUsers(t *testing.T) {
     RegisterFailHandler(Fail)
-    RunSpecs(t, "Recipes Suite")
+    RunSpecs(t, "Users Suite")
 }
 
 var (
