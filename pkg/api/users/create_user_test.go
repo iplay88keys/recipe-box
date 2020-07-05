@@ -32,9 +32,9 @@ var _ = Describe("createUser", func() {
             "password": "Pa3$12345"
         }`)
 
-        req := httptest.NewRequest("POST", "/signup", bytes.NewBuffer(body))
+        req := httptest.NewRequest("POST", "/users/register", bytes.NewBuffer(body))
         rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(users.Signup(existsByUsername, existsByEmail, insertUser).Handler)
+        handler := http.HandlerFunc(users.Register(existsByUsername, existsByEmail, insertUser).Handler)
 
         handler.ServeHTTP(rr, req)
         Expect(rr.Code).To(Equal(http.StatusOK))
@@ -63,9 +63,9 @@ var _ = Describe("createUser", func() {
             "password": ""
         }`)
 
-        req := httptest.NewRequest("POST", "/signup", bytes.NewBuffer(body))
+        req := httptest.NewRequest("POST", "/users/register", bytes.NewBuffer(body))
         rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(users.Signup(existsByUsername, existsByEmail, insertUser).Handler)
+        handler := http.HandlerFunc(users.Register(existsByUsername, existsByEmail, insertUser).Handler)
 
         handler.ServeHTTP(rr, req)
         Expect(rr.Code).To(Equal(http.StatusBadRequest))
@@ -114,9 +114,9 @@ var _ = Describe("createUser", func() {
             "password": "Pa3$12345"
         }`)
 
-        req := httptest.NewRequest("POST", "/signup", bytes.NewBuffer(body))
+        req := httptest.NewRequest("POST", "/users/register", bytes.NewBuffer(body))
         rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(users.Signup(existsByUsername, existsByEmail, insertUser).Handler)
+        handler := http.HandlerFunc(users.Register(existsByUsername, existsByEmail, insertUser).Handler)
 
         handler.ServeHTTP(rr, req)
         Expect(rr.Code).To(Equal(http.StatusOK))
@@ -145,9 +145,9 @@ var _ = Describe("createUser", func() {
             "password": "Pa3$12345"
         }`)
 
-        req := httptest.NewRequest("POST", "/signup", bytes.NewBuffer(body))
+        req := httptest.NewRequest("POST", "/users/register", bytes.NewBuffer(body))
         rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(users.Signup(existsByUsername, existsByEmail, insertUser).Handler)
+        handler := http.HandlerFunc(users.Register(existsByUsername, existsByEmail, insertUser).Handler)
 
         handler.ServeHTTP(rr, req)
         Expect(rr.Code).To(Equal(http.StatusOK))
@@ -170,9 +170,9 @@ var _ = Describe("createUser", func() {
             return -1, errors.New("some error")
         }
 
-        req := httptest.NewRequest("POST", "/signup", nil)
+        req := httptest.NewRequest("POST", "/users/register", nil)
         rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(users.Signup(existsByUsername, existsByEmail, insertUser).Handler)
+        handler := http.HandlerFunc(users.Register(existsByUsername, existsByEmail, insertUser).Handler)
 
         handler.ServeHTTP(rr, req)
         Expect(rr.Code).To(Equal(http.StatusBadRequest))
@@ -197,9 +197,9 @@ var _ = Describe("createUser", func() {
             "password": "Pa3$12345"
         }`)
 
-        req := httptest.NewRequest("POST", "/signup", bytes.NewBuffer(body))
+        req := httptest.NewRequest("POST", "/users/register", bytes.NewBuffer(body))
         rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(users.Signup(existsByUsername, existsByEmail, insertUser).Handler)
+        handler := http.HandlerFunc(users.Register(existsByUsername, existsByEmail, insertUser).Handler)
 
         handler.ServeHTTP(rr, req)
         Expect(rr.Code).To(Equal(http.StatusInternalServerError))
@@ -224,9 +224,9 @@ var _ = Describe("createUser", func() {
             "password": "Pa3$12345"
         }`)
 
-        req := httptest.NewRequest("POST", "/signup", bytes.NewBuffer(body))
+        req := httptest.NewRequest("POST", "/users/register", bytes.NewBuffer(body))
         rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(users.Signup(existsByUsername, existsByEmail, insertUser).Handler)
+        handler := http.HandlerFunc(users.Register(existsByUsername, existsByEmail, insertUser).Handler)
 
         handler.ServeHTTP(rr, req)
         Expect(rr.Code).To(Equal(http.StatusInternalServerError))
@@ -251,9 +251,9 @@ var _ = Describe("createUser", func() {
             "password": "Pa3$12345"
         }`)
 
-        req := httptest.NewRequest("POST", "/signup", bytes.NewBuffer(body))
+        req := httptest.NewRequest("POST", "/users/register", bytes.NewBuffer(body))
         rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(users.Signup(existsByUsername, existsByEmail, insertUser).Handler)
+        handler := http.HandlerFunc(users.Register(existsByUsername, existsByEmail, insertUser).Handler)
 
         handler.ServeHTTP(rr, req)
         Expect(rr.Code).To(Equal(http.StatusInternalServerError))

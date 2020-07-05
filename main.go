@@ -53,7 +53,7 @@ func main() {
 				ingredientsRepo.GetForRecipe,
 				stepsRepo.GetForRecipe,
 			),
-			users.Signup(
+			users.Register(
 				usersRepo.ExistsByUsername,
 				usersRepo.ExistsByEmail,
 				usersRepo.Insert,

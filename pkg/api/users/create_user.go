@@ -17,16 +17,16 @@ type existsByUsername func(username string) (bool, error)
 type existsByEmail func(email string) (bool, error)
 type insertUser func(username, email, password string) (int64, error)
 
-func Signup(existsByUsername existsByUsername, existsByEmail existsByEmail, insertUser insertUser) api.Endpoint {
+func Register(existsByUsername existsByUsername, existsByEmail existsByEmail, insertUser insertUser) api.Endpoint {
     return api.Endpoint{
-        Path:   "signup",
+        Path:   "users/register",
         Method: http.MethodPost,
         Handler: func(w http.ResponseWriter, r *http.Request) {
             defer r.Body.Close()
             var user UserSignupRequest
             err := json.NewDecoder(r.Body).Decode(&user)
             if err != nil {
-                fmt.Println("Error decoding json body for user signup")
+                fmt.Println("Error decoding json body for registration")
                 w.WriteHeader(http.StatusBadRequest)
                 return
             }
@@ -39,7 +39,7 @@ func Signup(existsByUsername existsByUsername, existsByEmail existsByEmail, inse
                 }
                 respBytes, err := json.Marshal(resp)
                 if err != nil {
-                    fmt.Println("Error creating response for validation errors")
+                    fmt.Println("Error creating response for registration validation errors")
                     w.WriteHeader(http.StatusInternalServerError)
                     return
                 }
@@ -51,14 +51,14 @@ func Signup(existsByUsername existsByUsername, existsByEmail existsByEmail, inse
 
             usernameExists, err := existsByUsername(user.Username)
             if err != nil {
-                fmt.Println("Error checking if user exists by username")
+                fmt.Println("Error checking if user exists by username for registration")
                 w.WriteHeader(http.StatusInternalServerError)
                 return
             }
 
             emailExists, err := existsByEmail(user.Email)
             if err != nil {
-                fmt.Println("Error checking if user exists by email")
+                fmt.Println("Error checking if user exists by email for registration")
                 w.WriteHeader(http.StatusInternalServerError)
                 return
             }
@@ -73,7 +73,7 @@ func Signup(existsByUsername existsByUsername, existsByEmail existsByEmail, inse
                 resp.UsernameExisted = usernameExists
                 respBytes, err := json.Marshal(resp)
                 if err != nil {
-                    fmt.Println("Error creating response for user previously existed")
+                    fmt.Println("Error creating response for user previously existed for registration")
                     w.WriteHeader(http.StatusInternalServerError)
                     return
                 }
@@ -84,14 +84,14 @@ func Signup(existsByUsername existsByUsername, existsByEmail existsByEmail, inse
 
             _, err = insertUser(user.Username, user.Email, user.Password)
             if err != nil {
-                fmt.Println("Failed to create user")
+                fmt.Println("Failed to register user")
                 w.WriteHeader(http.StatusInternalServerError)
                 return
             }
 
             respBytes, err := json.Marshal(resp)
             if err != nil {
-                fmt.Println("Error creating response for user created")
+                fmt.Println("Error creating response for user registered")
                 w.WriteHeader(http.StatusInternalServerError)
                 return
             }

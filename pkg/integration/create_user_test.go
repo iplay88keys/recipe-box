@@ -18,7 +18,7 @@ import (
     . "github.com/onsi/gomega"
 )
 
-var _ = Describe("Signup", func() {
+var _ = Describe("Register", func() {
     It("creates a new user", func() {
         if !databaseVarsAvailable {
             Skip("Missing some database information. Run the tests from 'scripts/test.sh' to start up the database.")
@@ -45,7 +45,7 @@ var _ = Describe("Signup", func() {
             "email": "someone@example.com",
             "password": "Pa3$word123"
         }`)
-        req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://localhost:%s/api/v1/signup", port), bytes.NewBuffer(body))
+        req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://localhost:%s/api/v1/users/register", port), bytes.NewBuffer(body))
         Expect(err).ToNot(HaveOccurred())
 
         resp, err := client.Do(req)
@@ -93,7 +93,7 @@ var _ = Describe("Signup", func() {
             "email": "",
             "password": ""
         }`)
-        req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://localhost:%s/api/v1/signup", port), bytes.NewBuffer(body))
+        req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://localhost:%s/api/v1/users/register", port), bytes.NewBuffer(body))
         Expect(err).ToNot(HaveOccurred())
 
         resp, err := client.Do(req)
