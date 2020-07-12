@@ -29,7 +29,9 @@ var _ = Describe("Users Repository", func() {
             usernameRow := sqlmock.NewRows([]string{"username"}).
                 AddRow("recipeGuru")
 
-            mock.ExpectQuery(`^SELECT .+ FROM users WHERE username='recipeGuru'`).WillReturnRows(usernameRow)
+            mock.ExpectQuery("^SELECT .+ FROM users WHERE username=?").
+                WithArgs("recipeGuru").
+                WillReturnRows(usernameRow)
 
             repo := repositories.NewUsersRepository(db)
             userExists, err := repo.ExistsByUsername("recipeGuru")
@@ -38,7 +40,8 @@ var _ = Describe("Users Repository", func() {
         })
 
         It("returns false if no user is found", func() {
-            mock.ExpectQuery(`^SELECT .+ FROM users WHERE username='missing'`).
+            mock.ExpectQuery("^SELECT .+ FROM users WHERE username=?").
+                WithArgs("missing").
                 WillReturnError(sql.ErrNoRows)
 
             repo := repositories.NewUsersRepository(db)
@@ -58,7 +61,8 @@ var _ = Describe("Users Repository", func() {
         })
 
         It("returns false and an error if an error occurs when querying", func() {
-            mock.ExpectQuery(`^SELECT .+ FROM users WHERE username='missing'`).
+            mock.ExpectQuery("^SELECT .+ FROM users WHERE username=?").
+                WithArgs("missing").
                 WillReturnError(errors.New("blah"))
 
             repo := repositories.NewUsersRepository(db)
@@ -75,7 +79,9 @@ var _ = Describe("Users Repository", func() {
             emailRow := sqlmock.NewRows([]string{"email"}).
                 AddRow("busyCook@example.com")
 
-            mock.ExpectQuery(`^SELECT .+ FROM users WHERE email='busyCook@example.com'`).WillReturnRows(emailRow)
+            mock.ExpectQuery("^SELECT .+ FROM users WHERE email=?").
+                WithArgs("busyCook@example.com").
+                WillReturnRows(emailRow)
 
             repo := repositories.NewUsersRepository(db)
 
@@ -85,7 +91,8 @@ var _ = Describe("Users Repository", func() {
         })
 
         It("returns false if no user is found", func() {
-            mock.ExpectQuery(`^SELECT .+ FROM users WHERE email='missing@example.com'`).
+            mock.ExpectQuery("^SELECT .+ FROM users WHERE email=?").
+                WithArgs("missing@example.com").
                 WillReturnError(sql.ErrNoRows)
 
             repo := repositories.NewUsersRepository(db)
@@ -105,7 +112,8 @@ var _ = Describe("Users Repository", func() {
         })
 
         It("returns false and an error if an error occurs when querying", func() {
-            mock.ExpectQuery(`^SELECT .+ FROM users WHERE email='missing@example.com'`).
+            mock.ExpectQuery("^SELECT .+ FROM users WHERE email=?").
+                WithArgs("missing@example.com").
                 WillReturnError(errors.New("error"))
 
             repo := repositories.NewUsersRepository(db)

@@ -4,9 +4,8 @@ import (
     "fmt"
     "net/mail"
     "strconv"
+    "strings"
     "unicode"
-
-    "github.com/iplay88keys/recipe-box/pkg/api"
 )
 
 type UserSignupRequest struct {
@@ -15,24 +14,82 @@ type UserSignupRequest struct {
     Password string `json:"password"`
 }
 
-func (u *UserSignupRequest) Validate() []api.Error {
-    var errors []api.Error
+func (u *UserSignupRequest) Validate(usernameExists, emailExists bool) map[string]string {
+    errors := make(map[string]string)
 
-    if u.Email == "" || u.Password == "" || u.Username == "" {
-        errs := []string{"username, password, and email are all required"}
-        errors = append(errors, api.Error{ErrorType: "basic", Errors: errs})
+    var usernameErrors []string
+    if len(u.Username) == 0 {
+        usernameErrors = append(usernameErrors, "Required")
+    } else if usernameExists {
+        usernameErrors = append(usernameErrors, "Username already in use")
+    } else {
+        usernameErrors = append(usernameErrors, u.validateUsername()...)
     }
 
-    parser := mail.AddressParser{}
-    _, err := parser.Parse(u.Email)
-    if err != nil {
-        errs := []string{"invalid email address"}
-        errors = append(errors, api.Error{ErrorType: "email", Errors: errs})
+    if len(usernameErrors) > 0 {
+        errors["username"] = strings.Join(usernameErrors, ", ")
     }
 
-    passwordErrors := u.validatePassword()
+    var emailErrors []string
+    if len(u.Email) == 0 {
+        emailErrors = append(emailErrors, "Required")
+    } else if emailExists {
+        emailErrors = append(emailErrors, "Email already in use")
+    } else {
+        parser := mail.AddressParser{}
+        _, err := parser.Parse(u.Email)
+        if err != nil {
+            emailErrors = append(emailErrors, "Invalid email address")
+        }
+    }
+
+    if len(emailErrors) > 0 {
+        errors["email"] = strings.Join(emailErrors, ", ")
+    }
+
+    var passwordErrors []string
+    if len(u.Password) == 0 {
+        passwordErrors = append(passwordErrors, "Required")
+    } else {
+        passwordErrors = append(passwordErrors, u.validatePassword()...)
+    }
+
     if len(passwordErrors) > 0 {
-        errors = append(errors, api.Error{ErrorType: "password", Errors: passwordErrors})
+        errors["password"] = strings.Join(passwordErrors, ", ")
+    }
+
+    return errors
+}
+
+func (u *UserSignupRequest) validateUsername() []string {
+    var errors []string
+
+    const minLength = 6
+    const maxLength = 30
+    var usernameLen int
+
+    for ind, ch := range u.Username {
+        switch {
+        case unicode.IsNumber(ch):
+            if ind == 0 {
+                errors = append(errors, "Cannot start with a number")
+            }
+            usernameLen++
+        case unicode.IsPunct(ch) && string(ch) == "_":
+            if ind == 0 {
+                errors = append(errors, "Cannot start with an underscore")
+            }
+            usernameLen++
+        case unicode.IsUpper(ch) || unicode.IsLower(ch):
+            usernameLen++
+        default:
+            errors = append(errors, "Only alphanumeric characters and underscores (_) allowed")
+            usernameLen++
+        }
+    }
+
+    if usernameLen < minLength || usernameLen > maxLength {
+        errors = append(errors, fmt.Sprintf("Must be between %d and %d characters long", minLength, maxLength))
     }
 
     return errors
@@ -42,7 +99,7 @@ func (u *UserSignupRequest) validatePassword() []string {
     var errors []string
 
     var uppercasePresent, lowercasePresent, numberPresent, specialCharPresent bool
-    const minLength = 8
+    const minLength = 6
     const maxLength = 64
     var passLen int
 
@@ -61,25 +118,25 @@ func (u *UserSignupRequest) validatePassword() []string {
             specialCharPresent = true
             passLen++
         default:
-            errors = append(errors, fmt.Sprintf("invalid character: %s", strconv.QuoteRune(ch)))
+            errors = append(errors, fmt.Sprintf("Invalid character: %s", strconv.QuoteRune(ch)))
             passLen++
         }
     }
 
     if !lowercasePresent {
-        errors = append(errors, "lowercase letter missing")
+        errors = append(errors, "Lowercase letter missing")
     }
     if !uppercasePresent {
-        errors = append(errors, "uppercase letter missing")
+        errors = append(errors, "Uppercase letter missing")
     }
     if !numberPresent {
-        errors = append(errors, "numeric character missing")
+        errors = append(errors, "Numeric character missing")
     }
     if !specialCharPresent {
-        errors = append(errors, "special character missing")
+        errors = append(errors, "Special character missing")
     }
     if passLen < minLength || passLen > maxLength {
-        errors = append(errors, fmt.Sprintf("must be between %d to %d characters long", minLength, maxLength))
+        errors = append(errors, fmt.Sprintf("Must be between %d and %d characters long", minLength, maxLength))
     }
 
     return errors

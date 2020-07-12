@@ -1,11 +1,11 @@
+import { Table, TableCell, TableContainer } from "@material-ui/core";
+import Enzyme, { mount, shallow } from "enzyme";
+import Adapter from "enzyme-adapter-react-16";
 import { createLocation, createMemoryHistory, Location, MemoryHistory } from "history";
 import React from "react";
-import Enzyme, { shallow } from "enzyme";
-import Adapter from "enzyme-adapter-react-16";
-import Table from "react-bootstrap/Table";
 import { match } from "react-router";
 import { RecipeResponse } from "../../state/ducks/recipes/types";
-import { RecipeList } from "./RecipeList";
+import { RecipeList, StyledTableRow } from "./RecipeList";
 
 Enzyme.configure({adapter: new Adapter()});
 
@@ -23,7 +23,7 @@ describe("RecipeList", () => {
             path,
             url: path.replace(":id", "1"),
             params: {id: "1"}
-        } as match<{ id: string }>;
+        };
 
         location = createLocation(matchParam.url);
     });
@@ -39,7 +39,7 @@ describe("RecipeList", () => {
             description: "Two"
         }] as RecipeResponse[];
 
-        const enzymeWrapper = shallow(
+        const enzymeWrapper = mount(
             <RecipeList
                 recipes={recipes}
                 loading={false}
@@ -49,13 +49,14 @@ describe("RecipeList", () => {
             />
         );
 
+        expect(enzymeWrapper.find(TableContainer)).toHaveLength(1);
         expect(enzymeWrapper.find(Table)).toHaveLength(1);
-        expect(enzymeWrapper.find("td")).toHaveLength(4);
-        expect(enzymeWrapper.find("tbody").children()).toHaveLength(2);
-        expect(enzymeWrapper.find("tbody").childAt(0).childAt(0).text()).toEqual("First");
-        expect(enzymeWrapper.find("tbody").childAt(0).childAt(1).text()).toEqual("One");
-        expect(enzymeWrapper.find("tbody").childAt(1).childAt(0).text()).toEqual("Second");
-        expect(enzymeWrapper.find("tbody").childAt(1).childAt(1).text()).toEqual("Two");
+        expect(enzymeWrapper.find(StyledTableRow).find(TableCell)).toHaveLength(4);
+        expect(enzymeWrapper.find(StyledTableRow).children()).toHaveLength(2);
+        expect(enzymeWrapper.find(StyledTableRow).at(0).find(TableCell).at(0).text()).toEqual("First");
+        expect(enzymeWrapper.find(StyledTableRow).at(0).find(TableCell).at(1).text()).toEqual("One");
+        expect(enzymeWrapper.find(StyledTableRow).at(1).find(TableCell).at(0).text()).toEqual("Second");
+        expect(enzymeWrapper.find(StyledTableRow).at(1).find(TableCell).at(1).text()).toEqual("Two");
     });
 
     it("does not render missing data", () => {
@@ -64,7 +65,7 @@ describe("RecipeList", () => {
             name: "First"
         }] as RecipeResponse[];
 
-        const enzymeWrapper = shallow(
+        const enzymeWrapper = mount(
             <RecipeList
                 recipes={recipes}
                 loading={false}
@@ -74,11 +75,11 @@ describe("RecipeList", () => {
             />
         );
 
+        expect(enzymeWrapper.find(TableContainer)).toHaveLength(1);
         expect(enzymeWrapper.find(Table)).toHaveLength(1);
-        expect(enzymeWrapper.find("td")).toHaveLength(1);
-        expect(enzymeWrapper.find("tbody").children()).toHaveLength(1);
-        expect(enzymeWrapper.find("tbody").childAt(0).children()).toHaveLength(1);
-        expect(enzymeWrapper.find("tbody").childAt(0).childAt(0).text()).toEqual("First");
+        expect(enzymeWrapper.find(StyledTableRow).children()).toHaveLength(1);
+        expect(enzymeWrapper.find(StyledTableRow).childAt(0).children()).toHaveLength(1);
+        expect(enzymeWrapper.find(StyledTableRow).childAt(0).childAt(0).text()).toEqual("First");
     });
 
     it("should load the single recipe page when the row is clicked", () => {
@@ -106,7 +107,7 @@ describe("RecipeList", () => {
             createHref: jest.fn()
         };
 
-        const enzymeWrapper = shallow(
+        const enzymeWrapper = mount(
             <RecipeList
                 recipes={recipes}
                 loading={false}
@@ -116,8 +117,11 @@ describe("RecipeList", () => {
             />
         );
 
-        enzymeWrapper.find("tbody").childAt(0).simulate("click");
+        enzymeWrapper.find(StyledTableRow).at(0).simulate("click");
         expect(historyMock.push.mock.calls[0]).toEqual(["/recipes/0"]);
+
+        enzymeWrapper.find(StyledTableRow).at(1).simulate("click");
+        expect(historyMock.push.mock.calls[1]).toEqual(["/recipes/1"]);
     });
 
     it("should render loading info when loading", () => {

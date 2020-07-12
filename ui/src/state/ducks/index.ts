@@ -1,19 +1,27 @@
 import { combineReducers } from "redux";
 import { all } from "redux-saga/effects";
 
-import { recipesReducer } from "./recipes/reducers";
-import recipesSagas from "./recipes/sagas";
-import { RecipesState } from "./recipes/types";
+import { recipeReducer } from "./recipes/reducers";
+import recipeSagas from "./recipes/sagas";
+import { RecipeState } from "./recipes/types";
+import { userReducer } from "./users/reducers";
+import userSagas from "./users/sagas";
+import { UserState } from "./users/types";
 
 export interface ApplicationState {
-    recipes: RecipesState
+    recipes: RecipeState,
+    users: UserState
 }
 
 export const createRootReducer = () => combineReducers({
-    recipes: recipesReducer
+    recipes: recipeReducer,
+    users: userReducer
 });
 
 export function* rootSaga() {
-    yield all([...recipesSagas]);
+    yield all([
+        ...recipeSagas,
+        ...userSagas
+    ]);
 }
 

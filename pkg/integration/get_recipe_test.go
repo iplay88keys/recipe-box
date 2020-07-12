@@ -19,7 +19,7 @@ import (
 )
 
 var _ = Describe("GetRecipe", func() {
-    It("returns a single recipe", func() {
+    It("returns a single recipe if authenticated", func() {
         if !databaseVarsAvailable {
             Skip("Missing some database information. Run the tests from 'scripts/test.sh' to start up the database.")
         }

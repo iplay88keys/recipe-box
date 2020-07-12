@@ -38,15 +38,11 @@ var _ = Describe("createUser", func() {
 
         handler.ServeHTTP(rr, req)
         Expect(rr.Code).To(Equal(http.StatusOK))
-        Expect(rr.Body.String()).To(MatchJSON(`{
-            "email_existed": false,
-            "username_existed": false
-        }`))
     })
 
     It("returns validation info", func() {
         existsByUsername := func(username string) (bool, error) {
-            return true, nil
+            return false, nil
         }
 
         existsByEmail := func(email string) (bool, error) {
@@ -70,28 +66,11 @@ var _ = Describe("createUser", func() {
         handler.ServeHTTP(rr, req)
         Expect(rr.Code).To(Equal(http.StatusBadRequest))
         Expect(rr.Body.String()).To(MatchJSON(`{
-            "email_existed": false,
-            "username_existed": false,
-            "errors": [{
-                "error_type": "basic",
-                "errors": [
-                    "username, password, and email are all required"
-                ]
-            }, {
-                "error_type": "email",
-                "errors": [
-                    "invalid email address"
-                ]
-            }, {
-                "error_type": "password",
-                "errors": [
-                    "lowercase letter missing",
-                    "uppercase letter missing",
-                    "numeric character missing",
-                    "special character missing",
-                    "must be between 8 to 64 characters long"
-                ]
-            }]
+            "errors": {
+                "email": "Required",
+                "password": "Required",
+                "username": "Required"
+            }
         }`))
     })
 
@@ -119,10 +98,11 @@ var _ = Describe("createUser", func() {
         handler := http.HandlerFunc(users.Register(existsByUsername, existsByEmail, insertUser).Handler)
 
         handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusOK))
+        Expect(rr.Code).To(Equal(http.StatusBadRequest))
         Expect(rr.Body.String()).To(MatchJSON(`{
-            "email_existed": false,
-            "username_existed": true
+            "errors": {
+                "username": "Username already in use"
+            }
         }`))
     })
 
@@ -150,10 +130,11 @@ var _ = Describe("createUser", func() {
         handler := http.HandlerFunc(users.Register(existsByUsername, existsByEmail, insertUser).Handler)
 
         handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusOK))
+        Expect(rr.Code).To(Equal(http.StatusBadRequest))
         Expect(rr.Body.String()).To(MatchJSON(`{
-            "email_existed": true,
-            "username_existed": false
+            "errors": {
+                "email": "Email already in use"
+            }
         }`))
     })
 

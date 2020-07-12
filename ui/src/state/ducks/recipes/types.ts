@@ -30,7 +30,7 @@ export interface Step {
     instructions: string
 }
 
-export interface RecipesState {
+export interface RecipeState {
     recipes: RecipeResponse[]
     recipe: RecipeResponse
     loading: boolean

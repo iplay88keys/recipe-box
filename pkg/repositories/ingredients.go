@@ -23,7 +23,7 @@ func NewIngredientsRepository(db *sql.DB) *IngredientsRepository {
 }
 
 func (r *IngredientsRepository) GetForRecipe(recipeID int) ([]*Ingredient, error) {
-    rows, err := r.db.Query(fmt.Sprintf(getIngredientsForRecipeQuery, recipeID))
+    rows, err := r.db.Query(getIngredientsForRecipeQuery, recipeID)
     if err != nil {
         return nil, errors.New(fmt.Sprintf("failed to fetch recipe ingredients: %s", err.Error()))
     }
@@ -53,5 +53,5 @@ const getIngredientsForRecipeQuery = `
   FROM recipe_ingredients as ri
   LEFT JOIN ingredients as i on ri.ingredient_id=i.id
   LEFT JOIN measurements as m on ri.measurement_id=m.id
-  WHERE ri.recipe_id=%d
+  WHERE ri.recipe_id=?
 `

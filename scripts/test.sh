@@ -7,6 +7,8 @@ set -e
 skipUI=false
 skipIntegration=false
 skipBackend=false
+
+ginkgo_args=("")
 while test $# -gt 0; do
     case "$1" in
         --skip-ui)
@@ -17,6 +19,9 @@ while test $# -gt 0; do
             ;;
         --skip-integration)
             skipIntegration=true
+            ;;
+        --integration)
+            ginkgo_args+=("pkg/integration")
             ;;
         --*)
             echo "bad option $1"
@@ -40,18 +45,33 @@ if [[ "${skipUI}" = "false" ]]; then
     popd
 fi
 
-ginkgo_args=("")
-if [[ "${skipIntegration}" = "false" ]]; then
-    ./scripts/start_database.sh > /dev/null 2>&1
+if [[ "${skipIntegration}" = "true" ]]; then
+    ginkgo_args+=("-skipPackage pkg/integration")
+else
+    exit_code=1
+    set +e
+    echo "Checking to see if mysql is available"
+    mysqladmin -u "${DATABASE_USERNAME}" \
+        -p"${DATABASE_PASSWORD}" \
+        -h "${DATABASE_HOST}" \
+        -P "${DATABASE_PORT}" ping  > /dev/null 2>&1
 
-    function finish {
-      ./scripts/stop_database.sh > /dev/null 2>&1
-    }
-    trap finish EXIT
+    exit_code=$?
+    set -e
+
+    if [[ "${exit_code}" -eq 1 ]]; then
+        echo "mysql is not running, starting it for testing"
+        ./scripts/start_database.sh > /dev/null 2>&1
+
+        function finish {
+          ./scripts/stop_database.sh > /dev/null 2>&1
+        }
+        trap finish EXIT
+    else
+        ./scripts/clean_database.sh
+    fi
 
     ./scripts/migrate_database.sh
-else
-    ginkgo_args+=("-skipPackage integration")
 fi
 
 if [[ "${skipBackend}" = "false" ]]; then

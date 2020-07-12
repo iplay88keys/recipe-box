@@ -22,7 +22,7 @@ func ListRecipes(listRecipes listRecipes) api.Endpoint {
         Handler: func(w http.ResponseWriter, r *http.Request) {
             recipes, err := listRecipes()
             if err != nil {
-                fmt.Printf("Error listing recipes: %s\n", err.Error())
+                fmt.Printf("FormError listing recipes: %s\n", err.Error())
                 w.WriteHeader(http.StatusInternalServerError)
                 return
             }
@@ -31,7 +31,7 @@ func ListRecipes(listRecipes listRecipes) api.Endpoint {
                 Recipes: recipes,
             })
             if err != nil {
-                fmt.Printf("Error marshaling recipe list: %s\n", err.Error())
+                fmt.Printf("FormError marshaling recipe list: %s\n", err.Error())
                 w.WriteHeader(http.StatusInternalServerError)
                 return
             }

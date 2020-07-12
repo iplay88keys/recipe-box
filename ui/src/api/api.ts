@@ -12,4 +12,16 @@ export default class Api {
             }
         });
     }
+
+    static async post(url: string, body: string) {
+        return await axios.create({
+            validateStatus: function (status) {
+                return status === 200;
+            }
+        }).post(url, body,{
+            headers: {
+                "Accept": "application/json"
+            }
+        });
+    }
 }

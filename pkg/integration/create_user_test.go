@@ -2,7 +2,6 @@ package integration_test
 
 import (
     "bytes"
-    "encoding/json"
     "fmt"
     "io/ioutil"
     "net/http"
@@ -11,7 +10,6 @@ import (
 
     "github.com/onsi/gomega/gexec"
 
-    "github.com/iplay88keys/recipe-box/pkg/api/users"
     . "github.com/iplay88keys/recipe-box/pkg/helpers"
 
     . "github.com/onsi/ginkgo"
@@ -40,11 +38,12 @@ var _ = Describe("Register", func() {
         Expect(err).ToNot(HaveOccurred())
         time.Sleep(1 * time.Second)
 
-        body := []byte(`{
-            "username": "some-user",
+        username := "some_user"
+        body := []byte(fmt.Sprintf(`{
+            "username": "%s",
             "email": "someone@example.com",
             "password": "Pa3$word123"
-        }`)
+        }`, username))
         req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://localhost:%s/api/v1/users/register", port), bytes.NewBuffer(body))
         Expect(err).ToNot(HaveOccurred())
 
@@ -54,17 +53,13 @@ var _ = Describe("Register", func() {
         session.Kill()
         Eventually(session).Should(gexec.Exit())
 
-        defer resp.Body.Close()
-        bytes, err := ioutil.ReadAll(resp.Body)
-        Expect(err).ToNot(HaveOccurred())
+        Expect(resp.StatusCode).To(Equal(http.StatusOK))
 
-        var userSignupResponse users.UserSignupResponse
-        err = json.Unmarshal(bytes, &userSignupResponse)
+        var count int
+        row := db.QueryRow("SELECT COUNT(*) FROM users WHERE username=?", username)
+        err = row.Scan(&count)
         Expect(err).ToNot(HaveOccurred())
-
-        Expect(userSignupResponse).To(Equal(users.UserSignupResponse{
-            EmailExisted: false,
-        }))
+        Expect(count).To(Equal(1))
     })
 
     It("returns an error if the json data is invalid", func() {
@@ -89,9 +84,9 @@ var _ = Describe("Register", func() {
         time.Sleep(1 * time.Second)
 
         body := []byte(`{
-            "username": "",
-            "email": "",
-            "password": ""
+            "username": "a",
+            "email": "a",
+            "password": "a"
         }`)
         req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://localhost:%s/api/v1/users/register", port), bytes.NewBuffer(body))
         Expect(err).ToNot(HaveOccurred())
@@ -107,31 +102,12 @@ var _ = Describe("Register", func() {
         bytes, err := ioutil.ReadAll(resp.Body)
         Expect(err).ToNot(HaveOccurred())
 
-
-
         Expect(string(bytes)).To(MatchJSON(` {
-            "email_existed": false,
-            "username_existed": false,
-            "errors": [{
-                "error_type": "basic",
-                "errors": [
-                    "username, password, and email are all required"
-                ]
-            }, {
-                "error_type": "email",
-                "errors": [
-                    "invalid email address"
-                ]
-            }, {
-                "error_type": "password",
-                "errors": [
-                    "lowercase letter missing",
-                    "uppercase letter missing",
-                    "numeric character missing",
-                    "special character missing",
-                    "must be between 8 to 64 characters long"
-                ]
-            }]
+            "errors": {
+                "email": "Invalid email address",
+                "password": "Uppercase letter missing, Numeric character missing, Special character missing, Must be between 6 and 64 characters long",
+                "username": "Must be between 6 and 30 characters long"
+            }
         }`))
     })
 })

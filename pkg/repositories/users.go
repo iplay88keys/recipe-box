@@ -32,7 +32,7 @@ func (u *UsersRepository) ExistsByUsername(username string) (bool, error) {
         return false, errors.New("could not check for user: username required")
     }
 
-    userRow := u.db.QueryRow(fmt.Sprintf(existsByUsernameQuery, username))
+    userRow := u.db.QueryRow(existsByUsernameQuery, username)
 
     var user User
     err := userRow.Scan(&user.Username)
@@ -54,7 +54,7 @@ func (u *UsersRepository) ExistsByEmail(email string) (bool, error) {
         return false, errors.New("could not check for user: email required")
     }
 
-    userRow := u.db.QueryRow(fmt.Sprintf(existsByEmailQuery, email))
+    userRow := u.db.QueryRow(existsByEmailQuery, email)
 
     var user User
     err := userRow.Scan(&user.Email)
@@ -97,8 +97,8 @@ func (u *UsersRepository) Insert(username, email, password string) (int64, error
     return id, nil
 }
 
-const existsByUsernameQuery = "SELECT username FROM users WHERE username='%s'"
-const existsByEmailQuery = "SELECT email FROM users WHERE email='%s'"
+const existsByUsernameQuery = "SELECT username FROM users WHERE username=?"
+const existsByEmailQuery = "SELECT email FROM users WHERE email=?"
 const insertUserQuery = `INSERT INTO users
 (username,
 email,

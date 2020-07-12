@@ -33,17 +33,17 @@ export DATABASE_HOST="127.0.0.1"
 export DATABASE_PORT="3306"
 export DATABASE_NAME="db"
 
-echo "Restarting the database"
-./scripts/start_database.sh
-
-echo "Migrating the database"
-./scripts/migrate_database.sh
-
-function finish {
-    echo "Stopping the database"
-    ./scripts/stop_database.sh
-}
-trap finish EXIT
+#echo "Restarting the database"
+#./scripts/start_database.sh
+#
+#echo "Migrating the database"
+#./scripts/migrate_database.sh
+#
+#function finish {
+#    echo "Stopping the database"
+#    ./scripts/stop_database.sh
+#}
+#trap finish EXIT
 
 echo "Starting the app"
 go run main.go \

@@ -1,10 +1,7 @@
 import { AxiosResponse } from "axios";
 import { call, put, takeEvery } from "redux-saga/effects";
-import {
-    fetchRecipeAsync,
-    fetchRecipesAsync
-} from "./actions";
 import Api from "../../../api/api";
+import { fetchRecipeAsync, fetchRecipesAsync } from "./actions";
 import { RecipeActionTypes, RecipeListResponse, RecipeResponse } from "./types";
 
 export function* listRecipesSaga(): Generator {
@@ -13,6 +10,10 @@ export function* listRecipesSaga(): Generator {
 
         yield put(fetchRecipesAsync.success((response.data) as RecipeListResponse));
     } catch (err) {
+        console.log("recipes error case");
+        if (err.response && err.response.status === 401) {
+            // log out
+        }
         yield put(fetchRecipesAsync.failure(err));
     }
 }
@@ -23,6 +24,11 @@ export function* getRecipeSaga(action: ReturnType<typeof fetchRecipeAsync.reques
 
         yield put(fetchRecipeAsync.success((response.data) as RecipeResponse));
     } catch (err) {
+        console.log("recipe error case");
+        if (err.response && err.response.status === 401) {
+            // log out
+        }
+
         yield put(fetchRecipeAsync.failure(err));
     }
 }
@@ -35,5 +41,5 @@ function* watchRequestRecipe() {
     yield takeEvery(RecipeActionTypes.FETCH_RECIPE_REQUEST, getRecipeSaga);
 }
 
-const recipesSagas = [watchRequestRecipe(), watchRequestRecipes()];
-export default recipesSagas;
+const recipeSagas = [watchRequestRecipe(), watchRequestRecipes()];
+export default recipeSagas;

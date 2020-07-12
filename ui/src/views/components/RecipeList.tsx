@@ -1,11 +1,11 @@
+import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@material-ui/core";
 import React from "react";
-import Table from "react-bootstrap/Table";
 import { RouteComponentProps } from "react-router";
+import { withRouter } from "react-router-dom";
 import styled from "styled-components";
 import { RecipeResponse } from "../../state/ducks/recipes/types";
-import { withRouter } from "react-router-dom";
 
-const StyledTR = styled.tr`
+export const StyledTableRow = styled(TableRow)`
     cursor: pointer;
 `;
 
@@ -23,23 +23,33 @@ export const RecipeList = ({recipes, loading, history}: RecipeListProps) => {
         );
     }
 
+    if (!recipes) {
+        return (
+            <div>
+                <p>No recipes yet! Add some!</p>
+            </div>
+        );
+    }
+
     return (
-        <Table striped bordered hover>
-            <thead>
-            <tr>
-                <th>Recipe</th>
-                <th>Description</th>
-            </tr>
-            </thead>
-            <tbody>
-            {recipes.map((recipe: RecipeResponse) =>
-                <StyledTR key={recipe.id} onClick={() => history.push(`/recipes/${recipe.id}`)}>
-                    <td>{recipe.name}</td>
-                    {recipe.description != null && <td>{recipe.description}</td>}
-                </StyledTR>
-            )}
-            </tbody>
-        </Table>
+        <TableContainer component={Paper}>
+            <Table aria-label="simple table">
+                <TableHead>
+                    <TableRow>
+                        <TableCell>Recipe</TableCell>
+                        <TableCell>Description</TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {recipes.map((recipe: RecipeResponse) =>
+                        <StyledTableRow key={recipe.id} onClick={() => history.push(`/recipes/${recipe.id}`)}>
+                            <TableCell>{recipe.name}</TableCell>
+                            {recipe.description != null && <TableCell>{recipe.description}</TableCell>}
+                        </StyledTableRow>
+                    )}
+                </TableBody>
+            </Table>
+        </TableContainer>
     );
 };
 

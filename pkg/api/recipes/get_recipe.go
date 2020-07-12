@@ -50,21 +50,21 @@ func GetRecipe(getRecipe getRecipe, getIngredientsForRecipe getIngredientsForRec
 
             recipe, err := getRecipe(recipeID)
             if err != nil {
-                fmt.Printf("Error getting recipe: %s\n", err.Error())
+                fmt.Printf("FormError getting recipe: %s\n", err.Error())
                 w.WriteHeader(http.StatusInternalServerError)
                 return
             }
 
             recipeIngredients, err := getIngredientsForRecipe(recipeID)
             if err != nil {
-                fmt.Printf("Error getting ingredients for recipe: %s\n", err.Error())
+                fmt.Printf("FormError getting ingredients for recipe: %s\n", err.Error())
                 w.WriteHeader(http.StatusInternalServerError)
                 return
             }
 
             recipeSteps, err := getStepsForRecipe(recipeID)
             if err != nil {
-                fmt.Printf("Error getting steps for recipe: %s\n", err.Error())
+                fmt.Printf("FormError getting steps for recipe: %s\n", err.Error())
                 w.WriteHeader(http.StatusInternalServerError)
                 return
             }
@@ -78,7 +78,7 @@ func GetRecipe(getRecipe getRecipe, getIngredientsForRecipe getIngredientsForRec
                 Steps:       recipeSteps,
             })
             if err != nil {
-                fmt.Printf("Error marshaling recipe: %s\n", err.Error())
+                fmt.Printf("FormError marshaling recipe: %s\n", err.Error())
                 w.WriteHeader(http.StatusInternalServerError)
                 return
             }

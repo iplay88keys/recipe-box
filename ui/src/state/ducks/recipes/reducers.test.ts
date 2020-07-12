@@ -1,25 +1,10 @@
-import { recipesReducer } from "./reducers";
-import { Ingredient, RecipeResponse, RecipeListResponse, RecipeActionTypes, Step } from "./types";
-import { Error } from "../types";
+import { fetchRecipeAsync, fetchRecipesAsync } from "./actions";
+import { recipeReducer } from "./reducers";
+import { Ingredient, RecipeListResponse, RecipeResponse, Step } from "./types";
 
 describe("reducer", () => {
-    it("should return the initial state", () => {
-        const updatedState = recipesReducer(undefined, {type: "UNKNOWN"});
-
-        expect(updatedState).toEqual({
-            recipes: [],
-            recipe: {} as RecipeResponse,
-            loading: true,
-            error: ""
-        });
-    });
-
     it("should handle FETCH_RECIPES_REQUEST", () => {
-        const action = {
-            type: RecipeActionTypes.FETCH_RECIPES_REQUEST
-        };
-
-        const updatedState = recipesReducer(undefined, action);
+        const updatedState = recipeReducer(undefined, fetchRecipesAsync.request());
 
         expect(updatedState).toEqual({
             recipes: [],
@@ -37,12 +22,8 @@ describe("reducer", () => {
                 description: "One"
             }] as RecipeResponse[]
         } as RecipeListResponse;
-        const action = {
-            type: RecipeActionTypes.FETCH_RECIPES_SUCCESS,
-            payload: recipes
-        };
 
-        const updatedState = recipesReducer(undefined, action);
+        const updatedState = recipeReducer(undefined, fetchRecipesAsync.success(recipes));
 
         expect(updatedState).toEqual({
             recipes: recipes.recipes,
@@ -54,14 +35,10 @@ describe("reducer", () => {
 
     it("should handle FETCH_RECIPES_FAILURE", () => {
         let err = {
-            error: "some error"
+            message: "some error"
         } as Error;
-        const action = {
-            type: RecipeActionTypes.FETCH_RECIPES_FAILURE,
-            payload: err
-        };
 
-        const updatedState = recipesReducer(undefined, action);
+        const updatedState = recipeReducer(undefined, fetchRecipesAsync.failure(err));
 
         expect(updatedState).toEqual({
             recipes: [],
@@ -72,11 +49,7 @@ describe("reducer", () => {
     });
 
     it("should handle FETCH_RECIPE_REQUEST", () => {
-        const action = {
-            type: RecipeActionTypes.FETCH_RECIPE_REQUEST
-        };
-
-        const updatedState = recipesReducer(undefined, action);
+        const updatedState = recipeReducer(undefined, fetchRecipeAsync.request(1));
 
         expect(updatedState).toEqual({
             recipes: [],
@@ -108,12 +81,8 @@ describe("reducer", () => {
                 instructions: "Place ice cream in glass."
             }] as Step[]
         } as RecipeResponse;
-        const action = {
-            type: RecipeActionTypes.FETCH_RECIPE_SUCCESS,
-            payload: recipe
-        };
 
-        const updatedState = recipesReducer(undefined, action);
+        const updatedState = recipeReducer(undefined, fetchRecipeAsync.success(recipe));
 
         expect(updatedState).toEqual({
             recipes: [],
@@ -125,14 +94,10 @@ describe("reducer", () => {
 
     it("should handle FETCH_RECIPE_FAILURE", () => {
         let err = {
-            error: "some error"
+            message: "some error"
         } as Error;
-        const action = {
-            type: RecipeActionTypes.FETCH_RECIPE_FAILURE,
-            payload: err
-        };
 
-        const updatedState = recipesReducer(undefined, action);
+        const updatedState = recipeReducer(undefined, fetchRecipeAsync.failure(err));
 
         expect(updatedState).toEqual({
             recipes: [],

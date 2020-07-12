@@ -18,7 +18,7 @@ describe.only("recipes", () => {
         mock.restore();
     });
 
-    describe.only("listRecipesSaga", () => {
+    describe.only("listRecipeSaga", () => {
         it("returns the recipes and dispatches the success action", async () => {
             let dispatched: Action<string>[] = [];
 

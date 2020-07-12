@@ -20,9 +20,8 @@ type API struct {
     Server *http.Server
 }
 
-type Error struct {
-    ErrorType string   `json:"error_type"`
-    Errors    []string `json:"errors"`
+type FormError struct {
+
 }
 
 func New(config *Config) *API {

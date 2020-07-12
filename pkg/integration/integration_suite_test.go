@@ -1,6 +1,7 @@
 package integration_test
 
 import (
+    "database/sql"
     "fmt"
     "os"
     "testing"
@@ -22,6 +23,7 @@ var (
     pathToExecutable      string
     databaseURL           string
     databaseVarsAvailable bool
+    db                    *sql.DB
 )
 
 var _ = BeforeSuite(func() {
@@ -36,6 +38,11 @@ var _ = BeforeSuite(func() {
         databaseVarsAvailable = true
 
         var err error
+        db, err = sql.Open("mysql", databaseURL)
+        if err != nil {
+            panic(err)
+        }
+
         pathToExecutable, err = gexec.Build("github.com/iplay88keys/recipe-box")
         Expect(err).ToNot(HaveOccurred())
     }

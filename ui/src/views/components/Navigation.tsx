@@ -1,31 +1,53 @@
+import { AppBar, Button, Container, CssBaseline, Link, Toolbar, Typography } from "@material-ui/core";
+import makeStyles from "@material-ui/core/styles/makeStyles";
 import React from "react";
-import Button from "react-bootstrap/Button";
-import Form from "react-bootstrap/Form";
-import FormControl from "react-bootstrap/FormControl";
-import Nav from "react-bootstrap/Nav";
-import Navbar from "react-bootstrap/Navbar";
-import styled from "styled-components";
 
-const StyledNavbar = styled(Navbar)`
-    padding-left: 10%;
-    padding-right: 10%;
-`;
+const useStyles = makeStyles((theme) => ({
+    "@global": {
+        ul: {
+            margin: 0,
+            padding: 0,
+            listStyle: "none"
+        }
+    },
+    appBar: {
+        borderBottom: `1px solid ${theme.palette.divider}`
+    },
+    toolbar: {
+        flexWrap: "wrap"
+    },
+    toolbarTitle: {
+        flexGrow: 1
+    },
+    link: {
+        margin: theme.spacing(1, 1.5)
+    }
+}));
 
 export const Navigation = () => {
+    const classes = useStyles();
+
     return (
-        <StyledNavbar bg="light" expand="lg">
-            <Navbar.Brand href="/">Recipe Box</Navbar.Brand>
-            <Navbar.Toggle aria-controls="basic-navbar-nav"/>
-            <Navbar.Collapse id="basic-navbar-nav">
-                <Nav className="mr-auto">
-                    <Nav.Link href="/">Home</Nav.Link>
-                    <Nav.Link href="/recipes">Recipes</Nav.Link>
-                </Nav>
-                <Form inline>
-                    <FormControl type="text" placeholder="Search" className="mr-sm-2"/>
-                    <Button variant="outline-success">Search</Button>
-                </Form>
-            </Navbar.Collapse>
-        </StyledNavbar>
+        <Container component="main" maxWidth={false} disableGutters={true}>
+            <CssBaseline/>
+            <AppBar position="static" color="default" elevation={0} className={classes.appBar}>
+                <Toolbar className={classes.toolbar}>
+                    <Typography variant="h6" color="inherit" noWrap className={classes.toolbarTitle}>
+                        Recipe Box
+                    </Typography>
+                    <nav>
+                        <Link variant="button" color="textPrimary" href="/" className={classes.link}>
+                            Home
+                        </Link>
+                        <Link variant="button" color="textPrimary" href="/recipes" className={classes.link}>
+                            Recipes
+                        </Link>
+                    </nav>
+                    <Button href="/register" color="primary" variant="outlined" className={classes.link}>
+                        Register
+                    </Button>
+                </Toolbar>
+            </AppBar>
+        </Container>
     );
 };

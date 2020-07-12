@@ -53,7 +53,7 @@ func (r *RecipesRepository) List() ([]*Recipe, error) {
 }
 
 func (r *RecipesRepository) Get(id int) (*Recipe, error) {
-    row := r.db.QueryRow(fmt.Sprintf(getRecipeQuery, id))
+    row := r.db.QueryRow(getRecipeQuery, id)
 
     recipe := &Recipe{}
     if err := row.Scan(&recipe.ID,
@@ -118,7 +118,7 @@ const getRecipeQuery = `SELECT
     r.total_time,
     r.source FROM recipes as r
 LEFT JOIN users as u on r.creator=u.id
-WHERE r.id=%d
+WHERE r.id=?
 `
 const insertRecipeQuery = `INSERT INTO recipes
     (creator,

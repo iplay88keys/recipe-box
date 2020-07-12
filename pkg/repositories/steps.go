@@ -20,7 +20,7 @@ func NewStepsRepository(db *sql.DB) *StepsRepository {
 }
 
 func (r *StepsRepository) GetForRecipe(recipeID int) ([]*Step, error) {
-    rows, err := r.db.Query(fmt.Sprintf(getStepsForRecipeQuery, recipeID))
+    rows, err := r.db.Query(getStepsForRecipeQuery, recipeID)
     if err != nil {
         return nil, errors.New(fmt.Sprintf("failed to fetch recipe steps: %s", err.Error()))
     }
@@ -41,4 +41,4 @@ func (r *StepsRepository) GetForRecipe(recipeID int) ([]*Step, error) {
     return recipeSteps, nil
 }
 
-const getStepsForRecipeQuery = `SELECT step_no, instructions FROM recipe_steps WHERE recipe_id=%d`
+const getStepsForRecipeQuery = `SELECT step_no, instructions FROM recipe_steps WHERE recipe_id=?`
