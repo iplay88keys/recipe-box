@@ -30,6 +30,16 @@ func main() {
     flag.StringVar(&databaseURL, "databaseURL", "", "the url for the database formatted as: mysql://$USER:$PASSWORD@tcp($HOST:$PORT)/$DATABASE")
     flag.Parse()
 
+    envPort := os.Getenv("PORT")
+    if envPort != "" {
+        port = envPort
+    }
+
+    envDatabaseURL := os.Getenv("DATABASE_URL")
+    if envDatabaseURL != "" {
+        port = envDatabaseURL
+    }
+
     unquotedURL, err := strconv.Unquote(databaseURL)
     if err == nil {
         databaseURL = unquotedURL
