@@ -37,7 +37,7 @@ func main() {
 
     envDatabaseURL := os.Getenv("DATABASE_URL")
     if envDatabaseURL != "" {
-        port = envDatabaseURL
+        databaseURL = envDatabaseURL
     }
 
     unquotedURL, err := strconv.Unquote(databaseURL)
