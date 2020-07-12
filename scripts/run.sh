@@ -47,4 +47,4 @@ export DATABASE_NAME="db"
 
 echo "Starting the app"
 go run main.go \
-  -databaseURL "user:password@tcp(127.0.0.1:3306)/db"
+  -databaseURL "mysql://user:password@tcp(127.0.0.1:3306)/db"

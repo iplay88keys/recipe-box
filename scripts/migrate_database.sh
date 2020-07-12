@@ -2,6 +2,8 @@
 
 set -e
 
+. ./scripts/dev_db_creds.sh
+
 pushd migrations
     echo "Migrating the database"
     flyway migrate \
