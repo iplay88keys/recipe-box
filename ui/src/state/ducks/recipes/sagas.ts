@@ -10,7 +10,6 @@ export function* listRecipesSaga(): Generator {
 
         yield put(fetchRecipesAsync.success((response.data) as RecipeListResponse));
     } catch (err) {
-        console.log("recipes error case");
         if (err.response && err.response.status === 401) {
             // log out
         }
@@ -24,7 +23,6 @@ export function* getRecipeSaga(action: ReturnType<typeof fetchRecipeAsync.reques
 
         yield put(fetchRecipeAsync.success((response.data) as RecipeResponse));
     } catch (err) {
-        console.log("recipe error case");
         if (err.response && err.response.status === 401) {
             // log out
         }

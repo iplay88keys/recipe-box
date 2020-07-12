@@ -20,7 +20,7 @@
     "@types/styled-components": "^5.0.1",
     "@types/yup": "^0.29.3",
     "axios": "latest",
-    "axios-mock-adapter": "latest",
+    "axios-mock-adapter": "^1.18.1",
     "babel-plugin-styled-components": "^1.10.7",
     "bootstrap": "^4.4.1",
     "enzyme": "^3.11.0",
