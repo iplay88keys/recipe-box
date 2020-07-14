@@ -7,12 +7,15 @@ import (
     "time"
 
     "github.com/gorilla/mux"
+
+    "github.com/iplay88keys/recipe-box/pkg/api/auth"
 )
 
 type Config struct {
-    Port      string
-    StaticDir string
-    Endpoints []Endpoint
+    Port           string
+    StaticDir      string
+    AuthMiddleware *auth.Middleware
+    Endpoints      []Endpoint
 }
 
 type API struct {
@@ -26,7 +29,12 @@ func New(config *Config) *API {
     api := r.PathPrefix("/api/v1").Subrouter()
 
     for _, endpoint := range config.Endpoints {
-        api.HandleFunc(fmt.Sprintf("/%s", endpoint.Path), endpoint.Handler).Methods(endpoint.Method)
+        handler := endpoint.Handler
+        if endpoint.Auth {
+            handler = config.AuthMiddleware.Handler(endpoint.Handler)
+        }
+
+        api.HandleFunc(fmt.Sprintf("/%s", endpoint.Path), handler).Methods(endpoint.Method)
     }
     api.NotFoundHandler = http.HandlerFunc(notFound)
 

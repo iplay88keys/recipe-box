@@ -68,6 +68,12 @@ if [[ "${skipIntegration}" = "false" ]]; then
     ./scripts/migrate_database.sh
 fi
 
+
+echo "Setting required env vars"
+export REDIS_URL="127.0.0.1:6379"
+export ACCESS_SECRET="access_secret"
+export REFRESH_SECRET="refresh_secret"
+
 if [[ "${skipBackend}" = "false" ]]; then
     echo "Running ginkgo for everything except integration"
     ginkgo -r -p -skipPackage pkg/integration

@@ -9,7 +9,10 @@ import (
     "strings"
     "syscall"
 
+    "github.com/go-redis/redis"
     "github.com/gorilla/mux"
+
+    "github.com/iplay88keys/recipe-box/pkg/api/auth"
 
     "github.com/iplay88keys/recipe-box/pkg/token"
 
@@ -22,7 +25,12 @@ import (
 )
 
 func main() {
-    var databaseURL string
+    var (
+        databaseURL   string
+        redisURL      string
+        accessSecret  string
+        refreshSecret string
+    )
     static := "ui/build"
     port := "8080"
 
@@ -37,12 +45,30 @@ func main() {
     }
     databaseURL = envDatabaseURL
 
-    unquotedURL, err := strconv.Unquote(databaseURL)
-    if err == nil {
-        databaseURL = unquotedURL
+    envRedisURL := os.Getenv("REDIS_URL")
+    if envRedisURL == "" {
+        panic("REDIS_URL is required")
+    }
+    redisURL = envRedisURL
+
+    envAccessSecret := os.Getenv("ACCESS_SECRET")
+    if envAccessSecret == "" {
+        panic("ACCESS_SECRET is required")
+    }
+    accessSecret = envAccessSecret
+
+    envRefreshSecret := os.Getenv("REFRESH_SECRET")
+    if envRefreshSecret == "" {
+        panic("REFRESH_SECRET is required")
+    }
+    refreshSecret = envRefreshSecret
+
+    db, err := connectToMySQL(databaseURL)
+    if err != nil {
+        panic(err)
     }
 
-    db, err := sql.Open("mysql", strings.TrimSpace(strings.TrimPrefix(databaseURL, "mysql://")))
+    redisClient, err := connectToRedis(redisURL)
     if err != nil {
         panic(err)
     }
@@ -52,10 +78,16 @@ func main() {
     stepsRepo := repositories.NewStepsRepository(db)
     usersRepo := repositories.NewUsersRepository(db)
 
+    redisRepo := repositories.NewRedisRepository(redisClient)
+    tokenService := token.NewService(accessSecret, refreshSecret)
+
+    userVerificationMiddleware := auth.NewMiddleware(tokenService, redisRepo)
+
     mux.NewRouter()
     a := api.New(&api.Config{
-        Port:      port,
-        StaticDir: static,
+        Port:           port,
+        StaticDir:      static,
+        AuthMiddleware: userVerificationMiddleware,
         Endpoints: []api.Endpoint{
             recipes.ListRecipes(recipesRepo.List),
             recipes.GetRecipe(
@@ -70,7 +102,8 @@ func main() {
             ),
             users.Login(
                 usersRepo.Verify,
-                token.CreateToken,
+                tokenService.CreateToken,
+                redisRepo.StoreTokenDetails,
             ),
         },
     })
@@ -82,6 +115,38 @@ func main() {
     defer stopApi()
 
     blockUntilSigterm()
+}
+
+func connectToMySQL(databaseURL string) (*sql.DB, error) {
+    unquotedURL, err := strconv.Unquote(databaseURL)
+    if err == nil {
+        databaseURL = unquotedURL
+    }
+
+    db, err := sql.Open("mysql", strings.TrimSpace(strings.TrimPrefix(databaseURL, "mysql://")))
+    if err != nil {
+        return nil, err
+    }
+
+    err = db.Ping()
+    if err != nil {
+        return nil, err
+    }
+
+    return db, nil
+}
+
+func connectToRedis(redisURL string) (redis.Cmdable, error) {
+    redisClient := redis.NewClient(&redis.Options{
+        Addr: redisURL,
+    })
+
+    _, err := redisClient.Ping().Result()
+    if err != nil {
+        return nil, err
+    }
+
+    return redisClient, nil
 }
 
 func blockUntilSigterm() {

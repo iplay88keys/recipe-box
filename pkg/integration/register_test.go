@@ -5,12 +5,6 @@ import (
     "fmt"
     "io/ioutil"
     "net/http"
-    "os/exec"
-    "time"
-
-    "github.com/onsi/gomega/gexec"
-
-    . "github.com/iplay88keys/recipe-box/pkg/helpers"
 
     . "github.com/onsi/ginkgo"
     . "github.com/onsi/gomega"
@@ -23,26 +17,6 @@ var _ = Describe("Register", func() {
     })
 
     It("creates a new user", func() {
-        if !databaseVarsAvailable {
-            Skip("Missing some database information. Run the tests from 'scripts/test.sh' to start up the database.")
-        }
-
-        client := &http.Client{
-            Timeout: 10 * time.Second,
-        }
-
-        port, err := GetRandomPort()
-        Expect(err).ToNot(HaveOccurred())
-
-        cmd := exec.Command(pathToExecutable,
-            "-port", port,
-            "-databaseURL", fmt.Sprintf(`"%s"`, databaseURL),
-        )
-
-        session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
-        Expect(err).ToNot(HaveOccurred())
-        time.Sleep(1 * time.Second)
-
         username := "some_user"
         body := []byte(fmt.Sprintf(`{
             "username": "%s",
@@ -55,9 +29,6 @@ var _ = Describe("Register", func() {
         resp, err := client.Do(req)
         Expect(err).ToNot(HaveOccurred())
 
-        session.Kill()
-        Eventually(session).Should(gexec.Exit())
-
         Expect(resp.StatusCode).To(Equal(http.StatusOK))
 
         var count int
@@ -68,26 +39,6 @@ var _ = Describe("Register", func() {
     })
 
     It("returns an error if the json data is invalid", func() {
-        if !databaseVarsAvailable {
-            Skip("Missing some database information. Run the tests from 'scripts/test.sh' to start up the database.")
-        }
-
-        client := &http.Client{
-            Timeout: 10 * time.Second,
-        }
-
-        port, err := GetRandomPort()
-        Expect(err).ToNot(HaveOccurred())
-
-        cmd := exec.Command(pathToExecutable,
-            "-port", port,
-            "-databaseURL", fmt.Sprintf(`"%s"`, databaseURL),
-        )
-
-        session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
-        Expect(err).ToNot(HaveOccurred())
-        time.Sleep(1 * time.Second)
-
         body := []byte(`{
             "username": "a",
             "email": "a",
@@ -98,9 +49,6 @@ var _ = Describe("Register", func() {
 
         resp, err := client.Do(req)
         Expect(err).ToNot(HaveOccurred())
-
-        session.Kill()
-        Eventually(session).Should(gexec.Exit())
 
         Expect(resp.StatusCode).To(Equal(http.StatusBadRequest))
 

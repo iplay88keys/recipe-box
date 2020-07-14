@@ -2,10 +2,8 @@ package token_test
 
 import (
     "net/http"
-    "os"
     "time"
 
-    "github.com/dgrijalva/jwt-go"
     . "github.com/onsi/ginkgo"
     . "github.com/onsi/gomega"
 
@@ -15,119 +13,56 @@ import (
 var _ = Describe("token", func() {
     Context("CreateToken", func() {
         It("creates a token", func() {
-            err := os.Setenv("ACCESS_SECRET", "secret value")
+            s := token.NewService("secret value", "refresh value")
+            details, err := s.CreateToken(10)
             Expect(err).ToNot(HaveOccurred())
 
-            token, err := token.CreateToken(0)
-            Expect(err).ToNot(HaveOccurred())
-            Expect(len(token)).To(BeNumerically(">", 0))
+            Expect(len(details.AccessToken)).To(BeNumerically(">", 0))
+            Expect(len(details.RefreshToken)).To(BeNumerically(">", 0))
+
+            Expect(details.AccessExpires).To(BeNumerically(">", time.Now().Unix()))
+            Expect(details.RefreshExpires).To(BeNumerically(">", time.Now().Unix()))
+
+            Expect(details.AccessUuid).ToNot(Equal(""))
+            Expect(details.RefreshUuid).ToNot(Equal(""))
         })
     })
 
-    Context("ExtractToken", func() {
-        It("returns the token string from a request", func() {
+    Context("ValidateToken", func() {
+        It("returns user info if the token is valid", func() {
             req, err := http.NewRequest(http.MethodPost, "example.com", nil)
-            Expect(err).ToNot(HaveOccurred())
-
-            req.Header.Set("Authorization", "bearer some-token")
-
-            token := token.ExtractToken(req)
-            Expect(err).ToNot(HaveOccurred())
-            Expect(token).To(Equal("some-token"))
-        })
-
-        It("returns an empty string if the token does not exist", func() {
-            req, err := http.NewRequest(http.MethodPost, "example.com", nil)
-            Expect(err).ToNot(HaveOccurred())
-
-            req.Header.Set("Authorization", "bearer")
-
-            token := token.ExtractToken(req)
-            Expect(err).ToNot(HaveOccurred())
-            Expect(token).To(Equal(""))
-        })
-
-        It("returns an empty string if the Authorization header does not exist", func() {
-            req, err := http.NewRequest(http.MethodPost, "example.com", nil)
-            Expect(err).ToNot(HaveOccurred())
-
-            token := token.ExtractToken(req)
-            Expect(err).ToNot(HaveOccurred())
-            Expect(token).To(Equal(""))
-        })
-    })
-
-    Context("ParseToken", func() {
-        It("parses a JWT token", func() {
-            err := os.Setenv("ACCESS_SECRET", "secret value")
             Expect(err).ToNot(HaveOccurred())
 
             // token from previous run of token.CreateToken(0)
-            jwtToken, err := token.ParseToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjowLCJleHAiOjE1OTQ2MTY0MzAsImlhdCI6MTU5NDYxMjgzMH0.9Bhbk7G25LG-fU9w_HOxDUw3u16cG0QULwIIUENXdJ4")
-            Expect(err).ToNot(HaveOccurred())
+            req.Header.Set(
+                "Authorization",
+                "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOjEwLCJBY2Nlc3NVVUlEIjoiNzc5ZjRlYzktYTA0My00ZjU1LWI2MDQtZGNlYmE3NmQwZTIyIiwiUmVmcmVzaFVVSUQiOiIiLCJleHAiOjE1OTQ3NDA3Mzh9.QzKb9sF-XRYD9gs8slrT7mlGObubQIsFkazgxv14b6U",
+            )
 
-            Expect(jwtToken).To(Equal(&jwt.Token{
-                Raw:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjowLCJleHAiOjE1OTQ2MTY0MzAsImlhdCI6MTU5NDYxMjgzMH0.9Bhbk7G25LG-fU9w_HOxDUw3u16cG0QULwIIUENXdJ4",
-                Method: &jwt.SigningMethodHMAC{Name: "HS256", Hash: 5},
-                Header: map[string]interface{}{"alg": "HS256", "typ": "JWT"},
-                Claims: &token.UserClaims{
-                    UserID: 0,
-                    StandardClaims: jwt.StandardClaims{
-                        ExpiresAt: 1594616430,
-                        IssuedAt:  1594612830,
-                    },
-                },
-                Signature: "9Bhbk7G25LG-fU9w_HOxDUw3u16cG0QULwIIUENXdJ4",
-                Valid:     true,
+            s := token.NewService("secret value", "refresh value")
+            accessDetails, err := s.ValidateToken(req)
+            Expect(err).ToNot(HaveOccurred())
+            Expect(accessDetails).To(Equal(&token.AccessDetails{
+                AccessUuid: "779f4ec9-a043-4f55-b604-dceba76d0e22",
+                UserId:     10,
             }))
         })
-    })
 
-    Context("VerifyToken", func() {
-        It("returns true if JWT Token is valid", func() {
-            err := os.Setenv("ACCESS_SECRET", "secret value")
+        It("returns false if the token is invalid", func() {
+            req, err := http.NewRequest(http.MethodPost, "example.com", nil)
             Expect(err).ToNot(HaveOccurred())
 
-            // token from previous run of token.CreateToken(0) passed through token.ParseToken
-            valid, err := token.VerifyToken(&jwt.Token{
-                Raw:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjowLCJleHAiOjE1OTQ2MTY0MzAsImlhdCI6MTU5NDYxMjgzMH0.9Bhbk7G25LG-fU9w_HOxDUw3u16cG0QULwIIUENXdJ4",
-                Method: &jwt.SigningMethodHMAC{Name: "HS256", Hash: 5},
-                Header: map[string]interface{}{"alg": "HS256", "typ": "JWT"},
-                Claims: &token.UserClaims{
-                    UserID: 0,
-                    StandardClaims: jwt.StandardClaims{
-                        IssuedAt:  time.Now().Unix(),
-                        ExpiresAt: time.Now().Add(time.Hour * 1).Unix(),
-                    },
-                },
-                Signature: "9Bhbk7G25LG-fU9w_HOxDUw3u16cG0QULwIIUENXdJ4",
-                Valid:     true,
-            })
-            Expect(err).ToNot(HaveOccurred())
-            Expect(valid).To(BeTrue())
-        })
+            // token from previous run of token.CreateToken(0)
+            req.Header.Set(
+                "Authorization",
+                "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjowLCJleHAiOjE1OTQ2MTY0MzAsImlhdCI6MTU5NDYxMjgzMH0.9Bhbk7G25LG-fU9w_HOxDUw3u16cG0QULwIIUENXdJ4",
+            )
 
-        It("returns false if JWT Token is invalid", func() {
-            err := os.Setenv("ACCESS_SECRET", "secret value")
-            Expect(err).ToNot(HaveOccurred())
-
-            // token from previous run of token.CreateToken(0) passed through token.ParseToken
-            valid, err := token.VerifyToken(&jwt.Token{
-                Raw:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjowLCJleHAiOjE1OTQ2MTY0MzAsImlhdCI6MTU5NDYxMjgzMH0.9Bhbk7G25LG-fU9w_HOxDUw3u16cG0QULwIIUENXdJ4",
-                Method: &jwt.SigningMethodHMAC{Name: "HS256", Hash: 5},
-                Header: map[string]interface{}{"alg": "HS256", "typ": "JWT"},
-                Claims: &token.UserClaims{
-                    UserID: 0,
-                    StandardClaims: jwt.StandardClaims{
-                        IssuedAt:  time.Now().Unix(),
-                        ExpiresAt: time.Now().Add(time.Hour * 1).Unix(),
-                    },
-                },
-                Signature: "9Bhbk7G25LG-fU9w_HOxDUw3u16cG0QULwIIUENXdJ4",
-                Valid:     false,
-            })
+            s := token.NewService("wrong value", "refresh value")
+            accessDetails, err := s.ValidateToken(req)
             Expect(err).To(HaveOccurred())
-            Expect(valid).To(BeFalse())
+            Expect(err).To(MatchError("signature is invalid"))
+            Expect(accessDetails).To(BeNil())
         })
     })
 })

@@ -73,10 +73,13 @@ var _ = BeforeEach(func() {
     port, err = GetRandomPort()
     Expect(err).ToNot(HaveOccurred())
 
-    cmd := exec.Command(pathToExecutable,
-        "-port", port,
-        "-databaseURL", fmt.Sprintf(`"%s"`, databaseURL),
-    )
+    err = os.Setenv("PORT", port)
+    Expect(err).ToNot(HaveOccurred())
+
+    err = os.Setenv("DATABASE_URL", databaseURL)
+    Expect(err).ToNot(HaveOccurred())
+
+    cmd := exec.Command(pathToExecutable)
 
     session, err = gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
     Expect(err).ToNot(HaveOccurred())

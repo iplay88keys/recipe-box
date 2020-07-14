@@ -5,6 +5,8 @@ import (
     "fmt"
     "net/http"
 
+    "github.com/iplay88keys/recipe-box/pkg/token"
+
     "github.com/iplay88keys/recipe-box/pkg/api"
 )
 
@@ -14,14 +16,16 @@ type UserLoginRequest struct {
 }
 
 type UserLoginResponse struct {
-    Token  string            `json:"token,omitempty"`
-    Errors map[string]string `json:"errors,omitempty"`
+    AccessToken  string            `json:"access_token,omitempty"`
+    RefreshToken string            `json:"refresh_token,omitempty"`
+    Errors       map[string]string `json:"errors,omitempty"`
 }
 
 type verify func(loginName, password string) (bool, int64, error)
-type createToken func(userid int64) (string, error)
+type createToken func(userid int64) (*token.Details, error)
+type storeTokenDetails func(userid int64, details *token.Details) error
 
-func Login(verify verify, createToken createToken) api.Endpoint {
+func Login(verify verify, createToken createToken, storeTokenDetails storeTokenDetails) api.Endpoint {
     return api.Endpoint{
         Path:   "users/login",
         Method: http.MethodPost,
@@ -63,15 +67,23 @@ func Login(verify verify, createToken createToken) api.Endpoint {
                 return
             }
 
-            token, err := createToken(userID)
+            tokenDetails, err := createToken(userID)
             if err != nil {
                 fmt.Printf("Error creating token for user login: %s\n", err.Error())
                 w.WriteHeader(http.StatusInternalServerError)
                 return
             }
 
+            err = storeTokenDetails(userID, tokenDetails)
+            if err != nil {
+                fmt.Printf("Error saving token for user login: %s\n", err.Error())
+                w.WriteHeader(http.StatusInternalServerError)
+                return
+            }
+
             resp := &UserLoginResponse{
-                Token: token,
+                AccessToken:  tokenDetails.AccessToken,
+                RefreshToken: tokenDetails.RefreshToken,
             }
 
             respBytes, err := json.Marshal(resp)

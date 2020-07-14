@@ -54,7 +54,8 @@ var _ = Describe("login", func() {
         err = json.Unmarshal(body, &output)
         Expect(err).ToNot(HaveOccurred())
 
-        Expect(output.Token).ToNot(Equal(""))
+        Expect(output.AccessToken).ToNot(Equal(""))
+        Expect(output.RefreshToken).ToNot(Equal(""))
     })
 
     It("returns unauthorized if the credentials are incorrect", func() {

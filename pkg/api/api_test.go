@@ -1,9 +1,16 @@
 package api_test
 
 import (
+    "errors"
     "io/ioutil"
     "net/http"
     "time"
+
+    "github.com/iplay88keys/recipe-box/pkg/token"
+
+    "github.com/iplay88keys/recipe-box/pkg/api/auth/authfakes"
+
+    "github.com/iplay88keys/recipe-box/pkg/api/auth"
 
     "github.com/iplay88keys/recipe-box/pkg/api"
     "github.com/iplay88keys/recipe-box/pkg/helpers"
@@ -24,14 +31,41 @@ var _ = Describe("API", func() {
         port, err = helpers.GetRandomPort()
         Expect(err).ToNot(HaveOccurred())
 
+        tokenService := &authfakes.FakeTokenService{}
+        redisRepo := &authfakes.FakeRedisRepo{}
+
+        tokenService.ValidateTokenStub = func(r *http.Request) (*token.AccessDetails, error) {
+            if r.Header.Get("Authorization") == "bearer token" {
+                return &token.AccessDetails{
+                    AccessUuid: "some-uuid",
+                    UserId:     10,
+                }, nil
+            } else {
+                return nil, errors.New("auth error")
+            }
+        }
+        redisRepo.RetrieveTokenDetailsStub = func(details *token.AccessDetails) (int64, error) {
+            return 10, nil
+        }
+
+        authMiddleware := auth.NewMiddleware(tokenService, redisRepo)
+
         server = api.New(&api.Config{
-            Port:      port,
-            StaticDir: "fixtures",
+            Port:           port,
+            StaticDir:      "fixtures",
+            AuthMiddleware: authMiddleware,
             Endpoints: []api.Endpoint{{
-                Path:   "test-api-endpoint",
+                Path:   "test-unauthenticated-endpoint",
                 Method: http.MethodGet,
                 Handler: func(w http.ResponseWriter, r *http.Request) {
                     w.Write([]byte("Exists"))
+                },
+            }, {
+                Path:   "test-authenticated-endpoint",
+                Method: http.MethodGet,
+                Auth:   true,
+                Handler: func(w http.ResponseWriter, r *http.Request) {
+                    w.Write([]byte("Authenticated"))
                 },
             }},
         })
@@ -54,7 +88,7 @@ var _ = Describe("API", func() {
         Expect(string(body)).To(ContainSubstring("Test HTML"))
     })
 
-    It("serves the api pages", func() {
+    It("serves unauthenticated api pages", func() {
         stop := server.Start()
         defer stop()
 
@@ -62,13 +96,34 @@ var _ = Describe("API", func() {
             Timeout: 15 * time.Second,
         }
 
-        resp, err := client.Get("http://localhost:" + port + "/api/v1/test-api-endpoint")
+        resp, err := client.Get("http://localhost:" + port + "/api/v1/test-unauthenticated-endpoint")
         Expect(err).ToNot(HaveOccurred())
         Expect(resp.StatusCode).To(Equal(http.StatusOK))
 
         body, err := ioutil.ReadAll(resp.Body)
         Expect(err).ToNot(HaveOccurred())
         Expect(string(body)).To(ContainSubstring("Exists"))
+    })
+
+    It("serves authenticated api pages if the user is authenticated", func() {
+        stop := server.Start()
+        defer stop()
+
+        client := &http.Client{
+            Timeout: 15 * time.Second,
+        }
+
+        req, err := http.NewRequest(http.MethodGet, "http://localhost:" + port + "/api/v1/test-authenticated-endpoint", nil)
+        Expect(err).ToNot(HaveOccurred())
+        req.Header.Set("Authorization", "bearer token")
+
+        resp, err := client.Do(req)
+        Expect(err).ToNot(HaveOccurred())
+        Expect(resp.StatusCode).To(Equal(http.StatusOK))
+
+        body, err := ioutil.ReadAll(resp.Body)
+        Expect(err).ToNot(HaveOccurred())
+        Expect(string(body)).To(ContainSubstring("Authenticated"))
     })
 
     It("serves the static files directly", func() {
@@ -103,5 +158,18 @@ var _ = Describe("API", func() {
         body, err := ioutil.ReadAll(resp.Body)
         Expect(err).ToNot(HaveOccurred())
         Expect(string(body)).To(Equal("page not found"))
+    })
+
+    It("returns unauthorized if the user is not authenticated for an endpoint that requires auth", func() {
+        stop := server.Start()
+        defer stop()
+
+        client := &http.Client{
+            Timeout: 15 * time.Second,
+        }
+
+        resp, err := client.Get("http://localhost:" + port + "/api/v1/test-authenticated-endpoint")
+        Expect(err).ToNot(HaveOccurred())
+        Expect(resp.StatusCode).To(Equal(http.StatusUnauthorized))
     })
 })

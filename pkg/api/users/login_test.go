@@ -6,6 +6,8 @@ import (
     "net/http"
     "net/http/httptest"
 
+    "github.com/iplay88keys/recipe-box/pkg/token"
+
     "github.com/iplay88keys/recipe-box/pkg/api/users"
 
     . "github.com/onsi/ginkgo"
@@ -18,8 +20,15 @@ var _ = Describe("login", func() {
             return true, 0, nil
         }
 
-        createToken := func(userid int64) (string, error) {
-            return "token", nil
+        createToken := func(userid int64) (*token.Details, error) {
+            return &token.Details{
+                AccessToken:  "access token",
+                RefreshToken: "refresh token",
+            }, nil
+        }
+
+        storeToken := func(userid int64, details *token.Details) error {
+            return nil
         }
 
         body := []byte(`{
@@ -29,12 +38,13 @@ var _ = Describe("login", func() {
 
         req := httptest.NewRequest("POST", "/users/login", bytes.NewBuffer(body))
         rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(users.Login(verify, createToken).Handler)
+        handler := http.HandlerFunc(users.Login(verify, createToken, storeToken).Handler)
 
         handler.ServeHTTP(rr, req)
         Expect(rr.Code).To(Equal(http.StatusOK))
         Expect(rr.Body.String()).To(MatchJSON(`{
-            "token": "token"
+            "access_token": "access token",
+            "refresh_token": "refresh token"
         }`))
     })
 
@@ -43,8 +53,14 @@ var _ = Describe("login", func() {
             return false, 0, nil
         }
 
-        createToken := func(userid int64) (string, error) {
-            return "", nil
+        createToken := func(userid int64) (*token.Details, error) {
+            return &token.Details{
+
+            }, nil
+        }
+
+        storeToken := func(userid int64, details *token.Details) error {
+            return nil
         }
 
         body := []byte(`{
@@ -54,7 +70,7 @@ var _ = Describe("login", func() {
 
         req := httptest.NewRequest("POST", "/users/login", bytes.NewBuffer(body))
         rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(users.Login(verify, createToken).Handler)
+        handler := http.HandlerFunc(users.Login(verify, createToken, storeToken).Handler)
 
         handler.ServeHTTP(rr, req)
         Expect(rr.Code).To(Equal(http.StatusUnauthorized))
@@ -70,13 +86,17 @@ var _ = Describe("login", func() {
             return false, 0, nil
         }
 
-        createToken := func(userid int64) (string, error) {
-            return "", nil
+        createToken := func(userid int64) (*token.Details, error) {
+            return &token.Details{}, nil
+        }
+
+        storeToken := func(userid int64, details *token.Details) error {
+            return nil
         }
 
         req := httptest.NewRequest("POST", "/users/login", nil)
         rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(users.Login(verify, createToken).Handler)
+        handler := http.HandlerFunc(users.Login(verify, createToken, storeToken).Handler)
 
         handler.ServeHTTP(rr, req)
         Expect(rr.Code).To(Equal(http.StatusBadRequest))
@@ -87,8 +107,12 @@ var _ = Describe("login", func() {
             return false, 0, errors.New("some error")
         }
 
-        createToken := func(userid int64) (string, error) {
-            return "", nil
+        createToken := func(userid int64) (*token.Details, error) {
+            return &token.Details{}, nil
+        }
+
+        storeToken := func(userid int64, details *token.Details) error {
+            return nil
         }
 
         body := []byte(`{
@@ -98,7 +122,7 @@ var _ = Describe("login", func() {
 
         req := httptest.NewRequest("POST", "/users/login", bytes.NewBuffer(body))
         rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(users.Login(verify, createToken).Handler)
+        handler := http.HandlerFunc(users.Login(verify, createToken, storeToken).Handler)
 
         handler.ServeHTTP(rr, req)
         Expect(rr.Code).To(Equal(http.StatusInternalServerError))
@@ -109,8 +133,12 @@ var _ = Describe("login", func() {
             return true, 0, nil
         }
 
-        createToken := func(userid int64) (string, error) {
-            return "", errors.New("some error")
+        createToken := func(userid int64) (*token.Details, error) {
+            return nil, errors.New("some error")
+        }
+
+        storeToken := func(userid int64, details *token.Details) error {
+            return nil
         }
 
         body := []byte(`{
@@ -120,7 +148,33 @@ var _ = Describe("login", func() {
 
         req := httptest.NewRequest("POST", "/users/login", bytes.NewBuffer(body))
         rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(users.Login(verify, createToken).Handler)
+        handler := http.HandlerFunc(users.Login(verify, createToken, storeToken).Handler)
+
+        handler.ServeHTTP(rr, req)
+        Expect(rr.Code).To(Equal(http.StatusInternalServerError))
+    })
+
+    It("returns an error if the token storing fails", func() {
+        verify := func(loginName, password string) (bool, int64, error) {
+            return true, 0, nil
+        }
+
+        createToken := func(userid int64) (*token.Details, error) {
+            return &token.Details{}, nil
+        }
+
+        storeToken := func(userid int64, details *token.Details) error {
+            return errors.New("some error")
+        }
+
+        body := []byte(`{
+            "login_name": "username",
+            "password": "bad-password"
+        }`)
+
+        req := httptest.NewRequest("POST", "/users/login", bytes.NewBuffer(body))
+        rr := httptest.NewRecorder()
+        handler := http.HandlerFunc(users.Login(verify, createToken, storeToken).Handler)
 
         handler.ServeHTTP(rr, req)
         Expect(rr.Code).To(Equal(http.StatusInternalServerError))
