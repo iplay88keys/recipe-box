@@ -8,7 +8,6 @@ skipUI=false
 skipIntegration=false
 skipBackend=false
 
-ginkgo_args=("")
 while test $# -gt 0; do
     case "$1" in
         --skip-ui)
@@ -19,9 +18,6 @@ while test $# -gt 0; do
             ;;
         --skip-integration)
             skipIntegration=true
-            ;;
-        --integration)
-            ginkgo_args+=("pkg/integration")
             ;;
         --*)
             echo "bad option $1"
@@ -45,9 +41,7 @@ if [[ "${skipUI}" = "false" ]]; then
     popd
 fi
 
-if [[ "${skipIntegration}" = "true" ]]; then
-    ginkgo_args+=("-skipPackage pkg/integration")
-else
+if [[ "${skipIntegration}" = "false" ]]; then
     exit_code=1
     set +e
     echo "Checking to see if mysql is available"
@@ -75,6 +69,11 @@ else
 fi
 
 if [[ "${skipBackend}" = "false" ]]; then
-    echo "Running ginkgo"
-    ginkgo -r -p ${ginkgo_args[@]}
+    echo "Running ginkgo for everything except integration"
+    ginkgo -r -p -skipPackage pkg/integration
+fi
+
+if [[ "${skipIntegration}" = "false" ]]; then
+    echo "Running ginkgo for integration"
+    ginkgo -r pkg/integration
 fi

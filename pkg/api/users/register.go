@@ -11,6 +11,7 @@ import (
 type UserSignupResponse struct {
     Errors map[string]string `json:"errors,omitempty"`
 }
+
 type existsByUsername func(username string) (bool, error)
 type existsByEmail func(email string) (bool, error)
 type insertUser func(username, email, password string) (int64, error)
@@ -24,21 +25,21 @@ func Register(existsByUsername existsByUsername, existsByEmail existsByEmail, in
             var user UserSignupRequest
             err := json.NewDecoder(r.Body).Decode(&user)
             if err != nil {
-                fmt.Println("FormError decoding json body for registration")
+                fmt.Println("Error decoding json body for registration")
                 w.WriteHeader(http.StatusBadRequest)
                 return
             }
 
             usernameExists, err := existsByUsername(user.Username)
             if err != nil {
-                fmt.Println("FormError checking if user exists by username for registration")
+                fmt.Println("Error checking if user exists by username for registration")
                 w.WriteHeader(http.StatusInternalServerError)
                 return
             }
 
             emailExists, err := existsByEmail(user.Email)
             if err != nil {
-                fmt.Println("FormError checking if user exists by email for registration")
+                fmt.Println("Error checking if user exists by email for registration")
                 w.WriteHeader(http.StatusInternalServerError)
                 return
             }
@@ -50,7 +51,7 @@ func Register(existsByUsername existsByUsername, existsByEmail existsByEmail, in
                 }
                 respBytes, err := json.Marshal(resp)
                 if err != nil {
-                    fmt.Println("FormError creating response for registration validation errors")
+                    fmt.Println("Error creating response for registration validation errors")
                     w.WriteHeader(http.StatusInternalServerError)
                     return
                 }

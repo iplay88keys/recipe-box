@@ -3,12 +3,17 @@ package integration_test
 import (
     "database/sql"
     "fmt"
+    "net/http"
     "os"
+    "os/exec"
     "testing"
+    "time"
 
     "github.com/onsi/gomega/gexec"
 
     _ "github.com/go-sql-driver/mysql"
+
+    . "github.com/iplay88keys/recipe-box/pkg/helpers"
 
     . "github.com/onsi/ginkgo"
     . "github.com/onsi/gomega"
@@ -24,6 +29,9 @@ var (
     databaseURL           string
     databaseVarsAvailable bool
     db                    *sql.DB
+    port                  string
+    client                *http.Client
+    session               *gexec.Session
 )
 
 var _ = BeforeSuite(func() {
@@ -46,8 +54,36 @@ var _ = BeforeSuite(func() {
         pathToExecutable, err = gexec.Build("github.com/iplay88keys/recipe-box")
         Expect(err).ToNot(HaveOccurred())
     }
+
+    client = &http.Client{
+        Timeout: 10 * time.Second,
+    }
 })
 
 var _ = AfterSuite(func() {
     gexec.CleanupBuildArtifacts()
+})
+
+var _ = BeforeEach(func() {
+    if !databaseVarsAvailable {
+        Skip("Missing some database information. Run the tests from 'scripts/test.sh' to start up the database.")
+    }
+
+    var err error
+    port, err = GetRandomPort()
+    Expect(err).ToNot(HaveOccurred())
+
+    cmd := exec.Command(pathToExecutable,
+        "-port", port,
+        "-databaseURL", fmt.Sprintf(`"%s"`, databaseURL),
+    )
+
+    session, err = gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
+    Expect(err).ToNot(HaveOccurred())
+    time.Sleep(1 * time.Second)
+})
+
+var _ = AfterEach(func() {
+    session.Kill()
+    Eventually(session).Should(gexec.Exit())
 })

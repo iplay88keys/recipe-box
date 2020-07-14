@@ -26,7 +26,7 @@ VALUES (1,
        (2,
         "Nana's Beans",
         "Spruced up baked beans.",
-        8, "10 m", NULL, NULL, "1-2 hrs",
+        8, "10 m", "1-2 hrs", NULL, "1-2 hrs",
         NULL);
 
 INSERT INTO ingredients (name)

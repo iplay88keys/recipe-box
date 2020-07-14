@@ -38,6 +38,9 @@ export DATABASE_NAME="db"
 #
 #echo "Migrating the database"
 #./scripts/migrate_database.sh
+
+#echo "Importing example data"
+#./scripts/import_example_database_data.sh
 #
 #function finish {
 #    echo "Stopping the database"

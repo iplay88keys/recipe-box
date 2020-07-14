@@ -4,11 +4,6 @@ import (
     "encoding/json"
     "fmt"
     "io/ioutil"
-    "net/http"
-    "os/exec"
-    "time"
-
-    "github.com/onsi/gomega/gexec"
 
     "github.com/iplay88keys/recipe-box/pkg/api/recipes"
     . "github.com/iplay88keys/recipe-box/pkg/helpers"
@@ -19,32 +14,51 @@ import (
 )
 
 var _ = Describe("ListRecipes", func() {
-    It("returns a list of recipes", func() {
-        if !databaseVarsAvailable {
-            Skip("Missing some database information. Run the tests from 'scripts/test.sh' to start up the database.")
-        }
+    var (
+        username string
+        password string
+        firstRecipeID int64
+        secondRecipeID int64
+    )
 
-        client := &http.Client{
-            Timeout: 10 * time.Second,
-        }
-
-        port, err := GetRandomPort()
+    BeforeEach(func() {
+        _, err := db.Exec("DELETE FROM users WHERE id IS NOT NULL")
         Expect(err).ToNot(HaveOccurred())
 
-        cmd := exec.Command(pathToExecutable,
-            "-port", port,
-            "-databaseURL", fmt.Sprintf(`"%s"`, databaseURL),
-        )
+        username = "list_recipes_user"
+        password = "Pa3$word123"
 
-        session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
+        usersRepo := repositories.NewUsersRepository(db)
+        userID, err := usersRepo.Insert(username, username+"@example.com", password)
         Expect(err).ToNot(HaveOccurred())
-        time.Sleep(1 * time.Second)
 
+        res, err := db.Exec(`INSERT INTO recipes (
+            creator, name, description, servings, prep_time, total_time
+            ) VALUES (?, ?, ?, ?, ?, ?)`,
+            userID, "Root Beer Float", "Delicious drink for a hot summer day.", 1, "5 m", "5 m")
+        Expect(err).ToNot(HaveOccurred())
+
+        firstRecipeID, err = res.LastInsertId()
+        Expect(err).ToNot(HaveOccurred())
+
+        userID, err = usersRepo.Insert("another_"+username, "another_"+username+"@example.com", password)
+        Expect(err).ToNot(HaveOccurred())
+
+        res, err = db.Exec(`INSERT INTO recipes (
+            creator, name, description, servings, prep_time, cook_time, total_time
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            userID, "Nana's Beans", "Spruced up baked beans.", 8, "10 m", "1-2 hrs", "1-2 hrs")
+        Expect(err).ToNot(HaveOccurred())
+
+        secondRecipeID, err = res.LastInsertId()
+        Expect(err).ToNot(HaveOccurred())
+    })
+
+    It("returns a list of recipes if authenticated", func() {
         resp, err := client.Get(fmt.Sprintf("http://localhost:%s/api/v1/recipes", port))
         Expect(err).ToNot(HaveOccurred())
 
-        session.Kill()
-        Eventually(session).Should(gexec.Exit())
+        // Needs auth header
 
         defer resp.Body.Close()
         bytes, err := ioutil.ReadAll(resp.Body)
@@ -56,14 +70,14 @@ var _ = Describe("ListRecipes", func() {
 
         Expect(recipeList).To(Equal(recipes.RecipeListResponse{
             Recipes: []*repositories.Recipe{{
-                ID:          Int64Pointer(1),
+                ID:          Int64Pointer(firstRecipeID),
                 Name:        StringPointer("Root Beer Float"),
                 Description: StringPointer("Delicious drink for a hot summer day."),
                 Creator:     nil,
                 PrepTime:    nil,
                 Source:      nil,
             }, {
-                ID:          Int64Pointer(2),
+                ID:          Int64Pointer(secondRecipeID),
                 Name:        StringPointer("Nana's Beans"),
                 Description: StringPointer("Spruced up baked beans."),
                 Creator:     nil,

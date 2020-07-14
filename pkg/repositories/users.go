@@ -4,9 +4,17 @@ import (
     "database/sql"
     "errors"
     "fmt"
+    "net/mail"
 
     "golang.org/x/crypto/bcrypt"
 )
+
+const BCRYPT_COST = 10
+
+type Credentials struct {
+    ID       int64
+    Password string
+}
 
 type User struct {
     Username string
@@ -19,11 +27,6 @@ type UsersRepository struct {
 
 func NewUsersRepository(db *sql.DB) *UsersRepository {
     return &UsersRepository{db: db}
-}
-
-func (u *UsersRepository) Authenticate(username, email, password string) (bool, error) {
-
-    return false, nil
 }
 
 func (u *UsersRepository) ExistsByUsername(username string) (bool, error) {
@@ -71,10 +74,10 @@ func (u *UsersRepository) ExistsByEmail(email string) (bool, error) {
 }
 
 func (u *UsersRepository) Insert(username, email, password string) (int64, error) {
-    hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 10)
+    hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), BCRYPT_COST)
     if err != nil {
         fmt.Printf("Could not hash the user password")
-        return -1, errors.New("could not has password")
+        return -1, errors.New("could not hash password")
     }
 
     res, err := u.db.Exec(insertUserQuery,
@@ -97,6 +100,37 @@ func (u *UsersRepository) Insert(username, email, password string) (int64, error
     return id, nil
 }
 
+func (u *UsersRepository) Verify(loginName, password string) (bool, int64, error) {
+    parser := mail.AddressParser{}
+    _, err := parser.Parse(loginName)
+
+    var result *sql.Row
+    if err == nil {
+        result = u.db.QueryRow(verifyByEmailQuery, loginName)
+    } else {
+        result = u.db.QueryRow(verifyByUsernameQuery, loginName)
+    }
+
+    storedCreds := &Credentials{}
+    err = result.Scan(&storedCreds.ID, &storedCreds.Password)
+    if err != nil {
+        if err == sql.ErrNoRows {
+            fmt.Println("Did not find user by email or username for verification")
+            return false, -1, nil
+        }
+
+        fmt.Println("Bad scan when verifying user credentials")
+        return false, -1, err
+    }
+
+    if err = bcrypt.CompareHashAndPassword([]byte(storedCreds.Password), []byte(password)); err != nil {
+        fmt.Println("User credentials comparision failed")
+        return false, -1, nil
+    }
+
+    return true, storedCreds.ID, nil
+}
+
 const existsByUsernameQuery = "SELECT username FROM users WHERE username=?"
 const existsByEmailQuery = "SELECT email FROM users WHERE email=?"
 const insertUserQuery = `INSERT INTO users
@@ -105,3 +139,5 @@ email,
 password_hash)
 VALUES (?, ?, ?)
 `
+const verifyByUsernameQuery = "select id, password_hash from users where username=?"
+const verifyByEmailQuery = "select id, password_hash from users where email=?"

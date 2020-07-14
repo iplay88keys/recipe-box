@@ -17,6 +17,11 @@ import (
 )
 
 var _ = Describe("Register", func() {
+    BeforeEach(func() {
+        _, err := db.Exec("DELETE FROM users WHERE id IS NOT NULL")
+        Expect(err).ToNot(HaveOccurred())
+    })
+
     It("creates a new user", func() {
         if !databaseVarsAvailable {
             Skip("Missing some database information. Run the tests from 'scripts/test.sh' to start up the database.")

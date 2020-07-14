@@ -12,7 +12,7 @@ import (
     . "github.com/onsi/gomega"
 )
 
-var _ = Describe("createUser", func() {
+var _ = Describe("register", func() {
     It("creates a user", func() {
         existsByUsername := func(username string) (bool, error) {
             return false, nil
@@ -215,7 +215,7 @@ var _ = Describe("createUser", func() {
 
     It("returns an error if the user insert fails", func() {
         existsByUsername := func(username string) (bool, error) {
-            return false, errors.New("error username")
+            return false, nil
         }
 
         existsByEmail := func(email string) (bool, error) {

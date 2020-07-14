@@ -5,10 +5,6 @@ import (
     "fmt"
     "io/ioutil"
     "net/http"
-    "os/exec"
-    "time"
-
-    "github.com/onsi/gomega/gexec"
 
     "github.com/iplay88keys/recipe-box/pkg/api/recipes"
     . "github.com/iplay88keys/recipe-box/pkg/helpers"
@@ -19,35 +15,67 @@ import (
 )
 
 var _ = Describe("GetRecipe", func() {
+    var (
+        username string
+        password string
+        recipeID int64
+    )
+
+    BeforeEach(func() {
+        _, err := db.Exec("DELETE FROM users WHERE id IS NOT NULL")
+        Expect(err).ToNot(HaveOccurred())
+
+        username = "get_recipe_user"
+        password = "Pa3$word123"
+
+        usersRepo := repositories.NewUsersRepository(db)
+        userID, err := usersRepo.Insert(username, username + "@example.com", password)
+        Expect(err).ToNot(HaveOccurred())
+
+        res, err := db.Exec(`INSERT INTO recipes (
+            creator, name, description, servings, prep_time, total_time
+            ) VALUES (?, ?, ?, ?, ?, ?)`,
+            userID, "Ice Cream", "Yum.", 1, "1 m", "1 m")
+        Expect(err).ToNot(HaveOccurred())
+
+        recipeID, err = res.LastInsertId()
+        Expect(err).ToNot(HaveOccurred())
+
+        res, err = db.Exec("INSERT INTO ingredients (name) VALUES (?)",
+            "Vanilla Ice Cream")
+        Expect(err).ToNot(HaveOccurred())
+
+        ingredientID, err := res.LastInsertId()
+        Expect(err).ToNot(HaveOccurred())
+
+        res, err = db.Exec("INSERT INTO measurements (name) VALUES (?)",
+            "Scoop")
+        Expect(err).ToNot(HaveOccurred())
+
+        measurementID, err := res.LastInsertId()
+        Expect(err).ToNot(HaveOccurred())
+
+        _, err = db.Exec(`INSERT INTO recipe_ingredients (
+            recipe_id, ingredient_id, ingredient_no, amount, measurement_id
+            ) VALUES (?, ?, ?, ?, ?)`,
+            recipeID, ingredientID, 1, 1, measurementID)
+        Expect(err).ToNot(HaveOccurred())
+
+        _, err = db.Exec(`INSERT INTO recipe_steps (
+            recipe_id, step_no, instructions
+            ) VALUES (?, ?, ?)`,
+            recipeID, 1, "Place ice cream in bowl.")
+        Expect(err).ToNot(HaveOccurred())
+    })
+
     It("returns a single recipe if authenticated", func() {
-        if !databaseVarsAvailable {
-            Skip("Missing some database information. Run the tests from 'scripts/test.sh' to start up the database.")
-        }
-
-        client := &http.Client{
-            Timeout: 10 * time.Second,
-        }
-
-        port, err := GetRandomPort()
+        req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://localhost:%s/api/v1/recipes/%d", port, recipeID), nil)
         Expect(err).ToNot(HaveOccurred())
 
-        cmd := exec.Command(pathToExecutable,
-            "-port", port,
-            "-databaseURL", fmt.Sprintf(`"%s"`, databaseURL),
-        )
-
-        session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
-        Expect(err).ToNot(HaveOccurred())
-        time.Sleep(1 * time.Second)
-
-        req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://localhost:%s/api/v1/recipes/1", port), nil)
-        Expect(err).ToNot(HaveOccurred())
+        // Needs auth header
 
         resp, err := client.Do(req)
         Expect(err).ToNot(HaveOccurred())
-
-        session.Kill()
-        Eventually(session).Should(gexec.Exit())
 
         defer resp.Body.Close()
         bytes, err := ioutil.ReadAll(resp.Body)
@@ -59,15 +87,15 @@ var _ = Describe("GetRecipe", func() {
 
         Expect(recipeList).To(Equal(recipes.RecipeResponse{
             Recipe: repositories.Recipe{
-                ID:          Int64Pointer(1),
-                Name:        StringPointer("Root Beer Float"),
-                Description: StringPointer("Delicious drink for a hot summer day."),
-                Creator:     StringPointer("user"),
+                ID:          Int64Pointer(recipeID),
+                Name:        StringPointer("Ice Cream"),
+                Description: StringPointer("Yum."),
+                Creator:     StringPointer(username),
                 Servings:    IntPointer(1),
-                PrepTime:    StringPointer("5 m"),
+                PrepTime:    StringPointer("1 m"),
                 CookTime:    nil,
                 CoolTime:    nil,
-                TotalTime:   StringPointer("5 m"),
+                TotalTime:   StringPointer("1 m"),
                 Source:      nil,
             },
             Ingredients: []*repositories.Ingredient{{
@@ -76,19 +104,10 @@ var _ = Describe("GetRecipe", func() {
                 Amount:           StringPointer("1"),
                 Measurement:      StringPointer("Scoop"),
                 Preparation:      nil,
-            }, {
-                Ingredient:       StringPointer("Root Beer"),
-                IngredientNumber: IntPointer(2),
-                Amount:           nil,
-                Measurement:      nil,
-                Preparation:      nil,
             }},
             Steps: []*repositories.Step{{
                 StepNumber:   IntPointer(1),
-                Instructions: StringPointer("Place ice cream in glass."),
-            }, {
-                StepNumber:   IntPointer(2),
-                Instructions: StringPointer("Top with Root Beer."),
+                Instructions: StringPointer("Place ice cream in bowl."),
             }},
         }))
     })

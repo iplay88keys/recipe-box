@@ -20,10 +20,6 @@ type API struct {
     Server *http.Server
 }
 
-type FormError struct {
-
-}
-
 func New(config *Config) *API {
     r := mux.NewRouter()
 

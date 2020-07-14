@@ -5,6 +5,7 @@ import (
     "errors"
 
     "github.com/DATA-DOG/go-sqlmock"
+    "golang.org/x/crypto/bcrypt"
 
     "github.com/iplay88keys/recipe-box/pkg/repositories"
 
@@ -165,6 +166,102 @@ var _ = Describe("Users Repository", func() {
             _, err := repo.Insert("some username", "some email", "some-password")
             Expect(err).To(HaveOccurred())
             Expect(err.Error()).To(ContainSubstring("user was not saved correctly"))
+        })
+    })
+
+    Describe("Login", func() {
+        It("verifies a user's credentials by username", func() {
+            hashedPassword, err := bcrypt.GenerateFromPassword([]byte("some-password"), repositories.BCRYPT_COST)
+            Expect(err).ToNot(HaveOccurred())
+
+            passwordRow := sqlmock.NewRows([]string{"id", "password"}).
+                AddRow("10", hashedPassword)
+
+            mock.ExpectQuery("^select id, password_hash from users where username=?").
+                WithArgs("some_username").
+                WillReturnRows(passwordRow)
+
+            repo := repositories.NewUsersRepository(db)
+
+            valid, userID, err := repo.Verify("some_username", "some-password")
+            Expect(err).ToNot(HaveOccurred())
+            Expect(valid).To(BeTrue())
+            Expect(userID).To(BeEquivalentTo(10))
+
+            Expect(mock.ExpectationsWereMet()).ToNot(HaveOccurred())
+        })
+
+        It("verifies a user's credentials by email", func() {
+            hashedPassword, err := bcrypt.GenerateFromPassword([]byte("some-password"), repositories.BCRYPT_COST)
+            Expect(err).ToNot(HaveOccurred())
+
+            passwordRow := sqlmock.NewRows([]string{"id", "password"}).
+                AddRow("20", hashedPassword)
+
+            mock.ExpectQuery("^select id, password_hash from users where email=?").
+                WithArgs("someone@example.com").
+                WillReturnRows(passwordRow)
+
+            repo := repositories.NewUsersRepository(db)
+
+            valid, userID, err := repo.Verify("someone@example.com", "some-password")
+            Expect(err).ToNot(HaveOccurred())
+            Expect(valid).To(BeTrue())
+            Expect(userID).To(BeEquivalentTo(20))
+
+            Expect(mock.ExpectationsWereMet()).ToNot(HaveOccurred())
+        })
+
+        It("returns false if the password is incorrect", func() {
+            hashedPassword, err := bcrypt.GenerateFromPassword([]byte("some-password"), repositories.BCRYPT_COST)
+            Expect(err).ToNot(HaveOccurred())
+
+            passwordRow := sqlmock.NewRows([]string{"id", "password"}).
+                AddRow("10", hashedPassword)
+
+            mock.ExpectQuery("^select id, password_hash from users where email=?").
+                WithArgs("someone@example.com").
+                WillReturnRows(passwordRow)
+
+            repo := repositories.NewUsersRepository(db)
+
+            valid, userID, err := repo.Verify("someone@example.com", "invalid-password")
+            Expect(err).ToNot(HaveOccurred())
+            Expect(valid).To(BeFalse())
+            Expect(userID).To(BeEquivalentTo(-1))
+
+            Expect(mock.ExpectationsWereMet()).ToNot(HaveOccurred())
+        })
+
+        It("returns false if the user cannot be found", func() {
+            mock.ExpectQuery("^select id, password_hash from users where email=?").
+                WithArgs("missing@example.com").
+                WillReturnError(sql.ErrNoRows)
+
+            repo := repositories.NewUsersRepository(db)
+
+            valid, userID, err := repo.Verify("missing@example.com", "some-password")
+            Expect(err).ToNot(HaveOccurred())
+            Expect(valid).To(BeFalse())
+            Expect(userID).To(BeEquivalentTo(-1))
+
+            Expect(mock.ExpectationsWereMet()).ToNot(HaveOccurred())
+        })
+
+        It("returns an error if there is a problem finding the user cannot be found by username or email", func() {
+            mock.ExpectQuery("^select id, password_hash from users where email=?").
+                WithArgs("someone@example.com").
+                WillReturnError(errors.New("some error"))
+
+            repo := repositories.NewUsersRepository(db)
+
+            valid, userID, err := repo.Verify("someone@example.com", "some-password")
+            Expect(err).To(HaveOccurred())
+            Expect(err).To(MatchError("some error"))
+            Expect(valid).To(BeFalse())
+            Expect(userID).To(BeEquivalentTo(-1))
+
+            Expect(mock.ExpectationsWereMet()).ToNot(HaveOccurred())
         })
     })
 })

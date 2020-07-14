@@ -12,6 +12,8 @@ import (
 
     "github.com/gorilla/mux"
 
+    "github.com/iplay88keys/recipe-box/pkg/token"
+
     "github.com/iplay88keys/recipe-box/pkg/api"
     "github.com/iplay88keys/recipe-box/pkg/api/recipes"
     "github.com/iplay88keys/recipe-box/pkg/api/users"
@@ -70,6 +72,10 @@ func main() {
                 usersRepo.ExistsByUsername,
                 usersRepo.ExistsByEmail,
                 usersRepo.Insert,
+            ),
+            users.Login(
+                usersRepo.Verify,
+                token.CreateToken,
             ),
         },
     })
