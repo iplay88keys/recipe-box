@@ -31,7 +31,7 @@ var _ = Describe("Recipe Repository", func() {
                 AddRow(0, "First Recipe", "The First").
                 AddRow(1, "Second Recipe", "The Second")
 
-            mock.ExpectQuery("^SELECT (.+) FROM recipes$").WillReturnRows(rows)
+            mock.ExpectQuery("^SELECT .+ FROM recipes$").WillReturnRows(rows)
 
             repo := repositories.NewRecipesRepository(db)
             recipes, err := repo.List()
@@ -51,7 +51,7 @@ var _ = Describe("Recipe Repository", func() {
         })
 
         It("returns an error if the query fails", func() {
-            mock.ExpectQuery("^SELECT (.+) FROM recipes$").
+            mock.ExpectQuery("^SELECT .+ FROM recipes$").
                 WillReturnError(errors.New("error"))
 
             repo := repositories.NewRecipesRepository(db)
@@ -64,7 +64,7 @@ var _ = Describe("Recipe Repository", func() {
             rows := sqlmock.NewRows([]string{"not", "expected", "columns"}).
                 AddRow("bad", "values", "returned")
 
-            mock.ExpectQuery("^SELECT (.+) FROM recipes$").WillReturnRows(rows)
+            mock.ExpectQuery("^SELECT .+ FROM recipes$").WillReturnRows(rows)
 
             repo := repositories.NewRecipesRepository(db)
             _, err := repo.List()
@@ -77,7 +77,7 @@ var _ = Describe("Recipe Repository", func() {
                 AddRow(0, "First Recipe", "The First").
                 RowError(0, errors.New("some error"))
 
-            mock.ExpectQuery("^SELECT (.+) FROM recipes$").
+            mock.ExpectQuery("^SELECT .+ FROM recipes$").
                 WillReturnRows(rows)
 
             repo := repositories.NewRecipesRepository(db)
@@ -113,12 +113,12 @@ var _ = Describe("Recipe Repository", func() {
                 "Some Book",
             )
 
-            mock.ExpectQuery("^SELECT (.+) FROM recipes (.+) WHERE (.+)=?").
-                WithArgs(1).
+            mock.ExpectQuery("^SELECT .+ FROM recipes .+ WHERE .+=? AND .+=?$").
+                WithArgs(1, 2).
                 WillReturnRows(rows)
 
             repo := repositories.NewRecipesRepository(db)
-            recipe, err := repo.Get(1)
+            recipe, err := repo.Get(1, 2)
             Expect(err).ToNot(HaveOccurred())
 
             Expect(recipe).To(Equal(&repositories.Recipe{
@@ -138,26 +138,26 @@ var _ = Describe("Recipe Repository", func() {
         })
 
         It("returns an error if the recipe cannot be found", func() {
-            mock.ExpectQuery("^SELECT (.+) FROM recipes (.+) WHERE (.+)=?$").
-                WithArgs(0).
+            mock.ExpectQuery("^SELECT .+ FROM recipes .+ WHERE .+=? AND .+=?$").
+                WithArgs(0, 0).
                 WillReturnError(sql.ErrNoRows)
 
             repo := repositories.NewRecipesRepository(db)
-            _, err := repo.Get(0)
+            _, err := repo.Get(0, 0)
             Expect(err).To(HaveOccurred())
-            Expect(err.Error()).To(ContainSubstring("could not find recipe"))
+            Expect(err).To(MatchError(sql.ErrNoRows))
         })
 
         It("returns an error if the row cannot be scanned", func() {
             rows := sqlmock.NewRows([]string{"not", "expected", "columns"}).
                 AddRow("bad", "values", "returned")
 
-            mock.ExpectQuery("^SELECT (.+) FROM recipes (.+) WHERE (.+)=?$").
-                WithArgs(0).
+            mock.ExpectQuery("^SELECT .+ FROM recipes .+ WHERE .+=? AND .+=?$").
+                WithArgs(0, 0).
                 WillReturnRows(rows)
 
             repo := repositories.NewRecipesRepository(db)
-            _, err := repo.Get(0)
+            _, err := repo.Get(0, 0)
             Expect(err).To(HaveOccurred())
             Expect(err.Error()).To(ContainSubstring("failed to retrieve recipe"))
         })

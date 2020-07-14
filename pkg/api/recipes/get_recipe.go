@@ -1,6 +1,7 @@
 package recipes
 
 import (
+    "database/sql"
     "encoding/json"
     "fmt"
     "net/http"
@@ -8,6 +9,7 @@ import (
     "strconv"
 
     "github.com/gorilla/mux"
+    "github.com/iplay88keys/recipe-box/pkg/api/auth"
 
     "github.com/iplay88keys/recipe-box/pkg/api"
     "github.com/iplay88keys/recipe-box/pkg/repositories"
@@ -31,25 +33,39 @@ func (a ByStepNumber) Len() int           { return len(a) }
 func (a ByStepNumber) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByStepNumber) Less(i, j int) bool { return *a[i].StepNumber < *a[j].StepNumber }
 
-type getRecipe func(recipeID int) (*repositories.Recipe, error)
-type getIngredientsForRecipe func(recipeID int) ([]*repositories.Ingredient, error)
-type getStepsForRecipe func(recipeID int) ([]*repositories.Step, error)
+type getRecipe func(recipeID, userID int64) (*repositories.Recipe, error)
+type getIngredientsForRecipe func(recipeID int64) ([]*repositories.Ingredient, error)
+type getStepsForRecipe func(recipeID int64) ([]*repositories.Step, error)
 
 func GetRecipe(getRecipe getRecipe, getIngredientsForRecipe getIngredientsForRecipe, getStepsForRecipe getStepsForRecipe) api.Endpoint {
     return api.Endpoint{
         Path:   "recipes/{id:[0-9]+}",
         Method: http.MethodGet,
+        Auth:   true,
         Handler: func(w http.ResponseWriter, r *http.Request) {
+            id := r.Context().Value(auth.ContextUserKey)
+            userID, ok := id.(int64)
+            if !ok {
+                fmt.Printf("Failed to cast userID to int64: '%s'\n", id)
+                w.WriteHeader(http.StatusInternalServerError)
+                return
+            }
+
             vars := mux.Vars(r)
-            recipeID, err := strconv.Atoi(vars["id"])
+            recipeID, err := strconv.ParseInt(vars["id"], 10, 64)
             if err != nil {
                 fmt.Printf("Recipe endpoint missing id: %s\n", err.Error())
                 w.WriteHeader(http.StatusInternalServerError)
                 return
             }
 
-            recipe, err := getRecipe(recipeID)
+            recipe, err := getRecipe(recipeID, userID)
             if err != nil {
+                if err == sql.ErrNoRows {
+                    w.WriteHeader(http.StatusNotFound)
+                    return
+                }
+
                 fmt.Printf("FormError getting recipe: %s\n", err.Error())
                 w.WriteHeader(http.StatusInternalServerError)
                 return

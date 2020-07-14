@@ -52,8 +52,8 @@ func (r *RecipesRepository) List() ([]*Recipe, error) {
     return recipes, nil
 }
 
-func (r *RecipesRepository) Get(id int) (*Recipe, error) {
-    row := r.db.QueryRow(getRecipeQuery, id)
+func (r *RecipesRepository) Get(id, userID int64) (*Recipe, error) {
+    row := r.db.QueryRow(getRecipeQuery, id, userID)
 
     recipe := &Recipe{}
     if err := row.Scan(&recipe.ID,
@@ -67,8 +67,7 @@ func (r *RecipesRepository) Get(id int) (*Recipe, error) {
         &recipe.TotalTime,
         &recipe.Source); err != nil {
         if err == sql.ErrNoRows {
-            fmt.Printf("Could not find recipe '%d': %s\n", id, err.Error())
-            return nil, errors.New("could not find recipe")
+            return nil, err
         }
 
         fmt.Printf("Failed to scan recipe '%d': %s\n", id, err.Error())
@@ -118,7 +117,7 @@ const getRecipeQuery = `SELECT
     r.total_time,
     r.source FROM recipes as r
 LEFT JOIN users as u on r.creator=u.id
-WHERE r.id=?
+WHERE r.id=? AND r.creator=?
 `
 const insertRecipeQuery = `INSERT INTO recipes
     (creator,

@@ -19,7 +19,7 @@ func NewStepsRepository(db *sql.DB) *StepsRepository {
     return &StepsRepository{db: db}
 }
 
-func (r *StepsRepository) GetForRecipe(recipeID int) ([]*Step, error) {
+func (r *StepsRepository) GetForRecipe(recipeID int64) ([]*Step, error) {
     rows, err := r.db.Query(getStepsForRecipeQuery, recipeID)
     if err != nil {
         return nil, errors.New(fmt.Sprintf("failed to fetch recipe steps: %s", err.Error()))

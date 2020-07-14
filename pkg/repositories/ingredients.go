@@ -22,7 +22,7 @@ func NewIngredientsRepository(db *sql.DB) *IngredientsRepository {
     return &IngredientsRepository{db: db}
 }
 
-func (r *IngredientsRepository) GetForRecipe(recipeID int) ([]*Ingredient, error) {
+func (r *IngredientsRepository) GetForRecipe(recipeID int64) ([]*Ingredient, error) {
     rows, err := r.db.Query(getIngredientsForRecipeQuery, recipeID)
     if err != nil {
         return nil, errors.New(fmt.Sprintf("failed to fetch recipe ingredients: %s", err.Error()))
