@@ -49,5 +49,5 @@ export DATABASE_NAME="db"
 #trap finish EXIT
 
 echo "Starting the app"
-go run main.go \
-  -databaseURL "mysql://user:password@tcp(127.0.0.1:3306)/db"
+export DATABASE_URL="mysql://${DATABASE_USERNAME}:${DATABASE_PASSWORD}@tcp(${DATABASE_HOST}:${DATABASE_PORT})/${DATABASE_NAME}"
+go run main.go

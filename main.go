@@ -2,7 +2,6 @@ package main
 
 import (
     "database/sql"
-    "flag"
     "fmt"
     "os"
     "os/signal"
@@ -23,14 +22,9 @@ import (
 )
 
 func main() {
-    var static string
-    var port string
     var databaseURL string
-
-    flag.StringVar(&static, "static", "ui/build", "the directory to serve static files from")
-    flag.StringVar(&port, "port", "8080", "the port to listen on")
-    flag.StringVar(&databaseURL, "databaseURL", "", "the url for the database formatted as: mysql://$USER:$PASSWORD@tcp($HOST:$PORT)/$DATABASE")
-    flag.Parse()
+    static := "ui/build"
+    port := "8080"
 
     envPort := os.Getenv("PORT")
     if envPort != "" {
@@ -38,9 +32,10 @@ func main() {
     }
 
     envDatabaseURL := os.Getenv("DATABASE_URL")
-    if envDatabaseURL != "" {
-        databaseURL = envDatabaseURL
+    if envDatabaseURL == "" {
+        panic("DATABASE_URL is required, formatted as: mysql://$USER:$PASSWORD@tcp($HOST:$PORT)/$DATABASE")
     }
+    databaseURL = envDatabaseURL
 
     unquotedURL, err := strconv.Unquote(databaseURL)
     if err == nil {
@@ -60,7 +55,7 @@ func main() {
     mux.NewRouter()
     a := api.New(&api.Config{
         Port:      port,
-        StaticDir: "ui/build",
+        StaticDir: static,
         Endpoints: []api.Endpoint{
             recipes.ListRecipes(recipesRepo.List),
             recipes.GetRecipe(
