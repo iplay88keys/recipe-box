@@ -33,7 +33,7 @@ export const Navigation = () => {
             <AppBar position="static" color="default" elevation={0} className={classes.appBar}>
                 <Toolbar className={classes.toolbar}>
                     <Typography variant="h6" color="inherit" noWrap className={classes.toolbarTitle}>
-                        Recipe Box
+                        My Recipe Library
                     </Typography>
                     <nav>
                         <Link variant="button" color="textPrimary" href="/" className={classes.link}>

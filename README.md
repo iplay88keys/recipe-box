@@ -1,4 +1,4 @@
-# Recipe Box
+# My Recipe Library
 
 A React Redux website for storing recipes
 

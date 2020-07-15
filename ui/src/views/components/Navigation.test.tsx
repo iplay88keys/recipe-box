@@ -10,7 +10,7 @@ describe("Navigation", () => {
     it("should render a list of links", () => {
         const enzymeWrapper = mount(<Navigation/>);
 
-        expect(enzymeWrapper.find(Typography).at(0).text()).toEqual("Recipe Box");
+        expect(enzymeWrapper.find(Typography).at(0).text()).toEqual("My Recipe Library");
         expect(enzymeWrapper.find(Link)).toHaveLength(2);
         expect(enzymeWrapper.find(Link).at(0).text()).toEqual("Home");
         expect(enzymeWrapper.find(Link).at(1).text()).toEqual("Recipes");
