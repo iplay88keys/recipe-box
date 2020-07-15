@@ -1,3 +1,4 @@
+import { AxiosResponse } from "axios";
 import { call, put, takeEvery } from "redux-saga/effects";
 import Api from "../../../api/api";
 import { history } from "../../../helpers/history";
@@ -21,11 +22,13 @@ export function* registerSaga(action: ReturnType<typeof registerAsync.request>):
 
 export function* loginSaga(action: ReturnType<typeof loginAsync.request>): Generator {
     try {
-        const response = (yield call(Api.post, "/api/v1/users/login", JSON.stringify(action.payload), false)) as LoginResponse;
+        const response = (yield call(Api.post, "/api/v1/users/login", JSON.stringify(action.payload), false)) as AxiosResponse;
 
         yield put(loginAsync.success());
 
-        localStorage.setItem("access_token", response.access_token);
+        let data = (response.data) as LoginResponse;
+        localStorage.setItem("access_token", data.access_token);
+
         history.push("/recipes");
     } catch (err) {
         if (err.response && err.response.data && err.response.data.errors) {
