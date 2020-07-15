@@ -27,8 +27,8 @@ func NewRecipesRepository(db *sql.DB) *RecipesRepository {
     return &RecipesRepository{db: db}
 }
 
-func (r *RecipesRepository) List() ([]*Recipe, error) {
-    rows, err := r.db.Query(listRecipesQuery)
+func (r *RecipesRepository) List(userID int64) ([]*Recipe, error) {
+    rows, err := r.db.Query(listRecipesQuery, userID)
     if err != nil {
         fmt.Printf("Failed to fetch recipes: %s\n", err.Error())
         return nil, errors.New("failed to fetch recipes")
@@ -104,7 +104,7 @@ func (r *RecipesRepository) Insert(recipe *Recipe, userID int64) (int64, error) 
     return id, nil
 }
 
-const listRecipesQuery = "SELECT id, name, description FROM recipes"
+const listRecipesQuery = "SELECT id, name, description FROM recipes WHERE creator=?"
 const getRecipeQuery = `SELECT
     r.id,
     r.name,

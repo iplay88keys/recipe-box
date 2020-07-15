@@ -46,7 +46,7 @@ func GetRecipe(getRecipe getRecipe, getIngredientsForRecipe getIngredientsForRec
             id := r.Context().Value(auth.ContextUserKey)
             userID, ok := id.(int64)
             if !ok {
-                fmt.Printf("Failed to cast userID to int64: '%s'\n", id)
+                fmt.Printf("Failed to cast userID to int64 for get recipe endpoint: '%s'\n", id)
                 w.WriteHeader(http.StatusInternalServerError)
                 return
             }

@@ -105,7 +105,7 @@ var _ = Describe("GetRecipe", func() {
         token = loginResponse.AccessToken
     })
 
-    Context("Authenticated", func() {
+    Context("authenticated", func() {
         It("returns a single recipe if owned by that user", func() {
             req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://localhost:%s/api/v1/recipes/%d", port, recipeID), nil)
             Expect(err).ToNot(HaveOccurred())
