@@ -25,7 +25,7 @@ export function* loginSaga(action: ReturnType<typeof loginAsync.request>): Gener
 
         yield put(loginAsync.success());
 
-        localStorage.setItem("access_token", response.accessToken);
+        localStorage.setItem("access_token", response.access_token);
         history.push("/recipes");
     } catch (err) {
         if (err.response && err.response.data && err.response.data.errors) {
