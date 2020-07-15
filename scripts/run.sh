@@ -50,7 +50,7 @@ export DATABASE_NAME="db"
 
 echo "Exporting env vars"
 export DATABASE_URL="mysql://${DATABASE_USERNAME}:${DATABASE_PASSWORD}@tcp(${DATABASE_HOST}:${DATABASE_PORT})/${DATABASE_NAME}"
-export REDIS_URL="127.0.0.1:6379"
+export REDIS_URL="redis://:@127.0.0.1:6379"
 export ACCESS_SECRET="access_secret"
 export REFRESH_SECRET="refresh_secret"
 

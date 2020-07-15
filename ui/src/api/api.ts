@@ -1,27 +1,37 @@
 import axios from "axios";
 
 export default class Api {
-    static async get(url: string) {
+    static async get(url: string, auth: boolean = true) {
+        let token = localStorage.getItem("access_token") || null;
+
+        let config = {
+            headers: {
+                "Accept": "application/json",
+                ...(auth && token && {"Authorization": "bearer " + token})
+            }
+        };
+
         return await axios.create({
             validateStatus: function (status) {
                 return status === 200;
             }
-        }).get(url, {
-            headers: {
-                "Accept": "application/json"
-            }
-        });
+        }).get(url, config);
     }
 
-    static async post(url: string, body: string) {
+    static async post(url: string, body: string, auth: boolean = true) {
+        let token = localStorage.getItem("access_token") || null;
+
+        let config = {
+            headers: {
+                "Accept": "application/json",
+                ...(auth && token && {"Authorization": "bearer " + token})
+            }
+        };
+
         return await axios.create({
             validateStatus: function (status) {
                 return status === 200;
             }
-        }).post(url, body,{
-            headers: {
-                "Accept": "application/json"
-            }
-        });
+        }).post(url, body, config);
     }
 }

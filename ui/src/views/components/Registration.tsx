@@ -13,10 +13,6 @@ const useStyles = makeStyles((theme) => ({
         flexDirection: "column",
         alignItems: "center"
     },
-    avatar: {
-        margin: theme.spacing(1),
-        backgroundColor: theme.palette.secondary.main
-    },
     form: {
         width: "100%",
         marginTop: theme.spacing(1)
@@ -25,6 +21,14 @@ const useStyles = makeStyles((theme) => ({
         margin: theme.spacing(3, 0, 2)
     }
 }));
+
+export interface RegistrationFormValues {
+    username: string,
+    email: string,
+    password: string,
+    passwordConfirmation: string
+    doRegister: typeof registerAsync.request
+}
 
 const showError = (field: string, formikProps: FormikProps<RegistrationFormValues>): boolean => {
     return (!getIn(formikProps.touched, field) && !!formikProps.status && !!getIn(formikProps.status, field)) ||
@@ -42,7 +46,7 @@ const errorMessage = (field: string, formikProps: FormikProps<RegistrationFormVa
 };
 
 let handleSubmit = (values: RegistrationFormValues, props: FormikHelpers<RegistrationFormValues>) => {
-    const {register} = values;
+    const {doRegister} = values;
     if (values.username && values.email && values.password) {
         let user: RegisterRequest = {
             username: values.username,
@@ -51,7 +55,7 @@ let handleSubmit = (values: RegistrationFormValues, props: FormikHelpers<Registr
         };
 
         props.setStatus({});
-        register(user, props.setStatus);
+        doRegister(user, props.setStatus);
     }
 
     props.setSubmitting(false);
@@ -62,14 +66,6 @@ let handleSubmit = (values: RegistrationFormValues, props: FormikHelpers<Registr
 
     props.setTouched(newTouched);
 };
-
-export interface RegistrationFormValues {
-    username: string,
-    email: string,
-    password: string,
-    passwordConfirmation: string
-    register: typeof registerAsync.request
-}
 
 export const RegistrationFormInner = (props: FormikProps<RegistrationFormValues>) => {
     const {handleSubmit, getFieldProps, isSubmitting} = props;
@@ -160,7 +156,7 @@ export default withFormik<RegistrationFormProps, RegistrationFormValues>({
         email: "",
         password: "",
         passwordConfirmation: "",
-        register: props.register
+        doRegister: props.register
     }),
     validationSchema: Yup.object({
         username: Yup.string()

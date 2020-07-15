@@ -10,7 +10,7 @@ interface PrivateRouteProps {
 
 export const PrivateRoute = ({component: Component, ...rest}: PrivateRouteProps) => (
     <Route {...rest} render={props => (
-        localStorage.getItem("user")
+        localStorage.getItem("access_token")
             ? <Component {...props} />
             : <Redirect to={{pathname: "/login", state: {from: props.location}}}/>
     )}/>

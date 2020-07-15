@@ -1,6 +1,5 @@
 import React from "react";
 import { connect } from "react-redux";
-import { RouteComponentProps, withRouter } from "react-router";
 import { ApplicationState } from "../../state/ducks";
 import { registerAsync } from "../../state/ducks/users/actions";
 import Registration from "../components/Registration";
@@ -11,13 +10,9 @@ interface PropsFromDispatch {
 
 interface State {}
 
-type AllProps = PropsFromDispatch & State & RouteComponentProps
+type AllProps = PropsFromDispatch & State
 
 class Register extends React.Component<AllProps, State> {
-    constructor(props: AllProps) {
-        super(props);
-    }
-
     render() {
         return (
             <Registration
@@ -33,4 +28,4 @@ const mapDispatchToProps = {
     register: registerAsync.request
 };
 
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Register));
+export default connect(mapStateToProps, mapDispatchToProps)(Register);

@@ -9,6 +9,7 @@ import { history } from "../helpers/history";
 import { ApplicationState } from "../state/ducks";
 import { Navigation } from "./components/Navigation";
 import { PrivateRoute } from "./components/PrivateRoute";
+import Login from "./pages/login";
 import Recipe from "./pages/recipe";
 import Recipes from "./pages/recipes";
 import Register from "./pages/register";
@@ -29,12 +30,12 @@ interface State {}
 type AllProps = PropsFromState & PropsFromDispatch & State
 
 class App extends React.Component<AllProps, State> {
-    constructor(props: AllProps) {
-        super(props);
-
-        history.listen(() => {
-        });
-    }
+    // constructor(props: AllProps) {
+    //     super(props);
+    //
+    //     history.listen(() => {
+    //     });
+    // }
 
     render() {
         const theme = createMuiTheme({
@@ -53,6 +54,7 @@ class App extends React.Component<AllProps, State> {
                             <Switch>
                                 <Route exact path="/" component={Recipes}/>
                                 <Route exact path="/register" component={Register}/>
+                                <Route exact path="/login" component={Login}/>
                                 <PrivateRoute exact path="/recipes" component={Recipes}/>
                                 <PrivateRoute exact path="/recipes/:recipeID" component={Recipe}/>
                                 {/*<Redirect from="*" to="/"/>*/}

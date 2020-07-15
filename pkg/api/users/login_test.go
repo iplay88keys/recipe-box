@@ -16,7 +16,7 @@ import (
 
 var _ = Describe("login", func() {
     It("logs a user in", func() {
-        verify := func(loginName, password string) (bool, int64, error) {
+        verify := func(login, password string) (bool, int64, error) {
             return true, 0, nil
         }
 
@@ -32,7 +32,7 @@ var _ = Describe("login", func() {
         }
 
         body := []byte(`{
-            "login_name": "username",
+            "login": "username",
             "password": "Pa3$12345"
         }`)
 
@@ -49,7 +49,7 @@ var _ = Describe("login", func() {
     })
 
     It("returns unauthorized if the login fails due to bad credentials", func() {
-        verify := func(loginName, password string) (bool, int64, error) {
+        verify := func(login, password string) (bool, int64, error) {
             return false, 0, nil
         }
 
@@ -64,7 +64,7 @@ var _ = Describe("login", func() {
         }
 
         body := []byte(`{
-            "login_name": "username",
+            "login": "username",
             "password": "bad-password"
         }`)
 
@@ -82,7 +82,7 @@ var _ = Describe("login", func() {
     })
 
     It("returns a bad request if there is no body", func() {
-        verify := func(loginName, password string) (bool, int64, error) {
+        verify := func(login, password string) (bool, int64, error) {
             return false, 0, nil
         }
 
@@ -103,7 +103,7 @@ var _ = Describe("login", func() {
     })
 
     It("returns an error if the login check fails", func() {
-        verify := func(loginName, password string) (bool, int64, error) {
+        verify := func(login, password string) (bool, int64, error) {
             return false, 0, errors.New("some error")
         }
 
@@ -116,7 +116,7 @@ var _ = Describe("login", func() {
         }
 
         body := []byte(`{
-            "login_name": "username",
+            "login": "username",
             "password": "bad-password"
         }`)
 
@@ -129,7 +129,7 @@ var _ = Describe("login", func() {
     })
 
     It("returns an error if the token creation fails", func() {
-        verify := func(loginName, password string) (bool, int64, error) {
+        verify := func(login, password string) (bool, int64, error) {
             return true, 0, nil
         }
 
@@ -142,7 +142,7 @@ var _ = Describe("login", func() {
         }
 
         body := []byte(`{
-            "login_name": "username",
+            "login": "username",
             "password": "bad-password"
         }`)
 
@@ -155,7 +155,7 @@ var _ = Describe("login", func() {
     })
 
     It("returns an error if the token storing fails", func() {
-        verify := func(loginName, password string) (bool, int64, error) {
+        verify := func(login, password string) (bool, int64, error) {
             return true, 0, nil
         }
 
@@ -168,7 +168,7 @@ var _ = Describe("login", func() {
         }
 
         body := []byte(`{
-            "login_name": "username",
+            "login": "username",
             "password": "bad-password"
         }`)
 

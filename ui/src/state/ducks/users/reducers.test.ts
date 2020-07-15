@@ -1,50 +1,73 @@
-import { registerAsync } from "./actions";
+import { loginAsync, registerAsync } from "./actions";
 import { userReducer } from "./reducers";
-import { RegisterRequest, RegisterResponse } from "./types";
+import { LoginRequest, RegisterRequest } from "./types";
 
 describe("reducer", () => {
-    it("should handle REGISTER_REQUEST", () => {
-        const req = {
-            username: "some-user",
-            email: "test@example.com",
-            password: "password"
-        } as RegisterRequest;
+    describe("register", function () {
+        it("should handle REGISTER_REQUEST", () => {
+            const req = {
+                username: "some-user",
+                email: "test@example.com",
+                password: "password"
+            } as RegisterRequest;
 
-        const mockSetErrors = jest.fn();
+            const mockSetErrors = jest.fn();
 
-        const updatedState = userReducer(undefined, registerAsync.request(req, mockSetErrors));
+            const updatedState = userReducer(undefined, registerAsync.request(req, mockSetErrors));
 
-        expect(updatedState).toEqual({
-            "error": "",
-            "registering": true
+            expect(updatedState).toEqual({
+                "registering": true
+            });
+        });
+
+        it("should handle REGISTER_SUCCESS", () => {
+            const updatedState = userReducer(undefined, registerAsync.success());
+            expect(updatedState).toEqual({});
+        });
+
+        it("should handle REGISTER_FAILURE", () => {
+            let err = {
+                message: "some error"
+            } as Error;
+
+            const updatedState = userReducer(undefined, registerAsync.failure(err));
+
+            expect(updatedState).toEqual({
+                "error": "some error"
+            });
         });
     });
 
-    it("should handle REGISTER_SUCCESS", () => {
-        const resp = {
-            errors: {
-                first: "first error",
-                second: "second error"
-            }
-        } as RegisterResponse;
+    describe("login", function () {
+        it("should handle LOGIN_REQUEST", () => {
+            const req = {
+                login: "some-user",
+                password: "password"
+            } as LoginRequest;
 
-        const updatedState = userReducer(undefined, registerAsync.success());
-        expect(updatedState).toEqual({
-            "error": "",
-            "registering": false
+            const mockSetErrors = jest.fn();
+
+            const updatedState = userReducer(undefined, loginAsync.request(req, mockSetErrors));
+
+            expect(updatedState).toEqual({
+                "loggingIn": true
+            });
         });
-    });
 
-    it("should handle REGISTER_FAILURE", () => {
-        let err = {
-            message: "some error"
-        } as Error;
+        it("should handle LOGIN_SUCCESS", () => {
+            const updatedState = userReducer(undefined, loginAsync.success());
+            expect(updatedState).toEqual({});
+        });
 
-        const updatedState = userReducer(undefined, registerAsync.failure(err));
+        it("should handle LOGIN_FAILURE", () => {
+            let err = {
+                message: "some error"
+            } as Error;
 
-        expect(updatedState).toEqual({
-            "error": "some error",
-            "registering": false
+            const updatedState = userReducer(undefined, loginAsync.failure(err));
+            expect(updatedState).toEqual({
+                "error": "some error"
+            });
         });
     });
 });

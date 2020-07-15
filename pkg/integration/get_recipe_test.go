@@ -85,7 +85,7 @@ var _ = Describe("GetRecipe", func() {
         Expect(err).ToNot(HaveOccurred())
 
         reqBody := []byte(fmt.Sprintf(`{
-            "login_name": "%s",
+            "login": "%s",
             "password": "%s"
         }`, username, password))
 

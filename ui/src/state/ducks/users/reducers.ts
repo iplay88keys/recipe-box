@@ -1,32 +1,36 @@
-import { Reducer } from "redux";
 import { ActionType, getType } from "typesafe-actions";
 import * as user from "./actions";
-import { registerAsync } from "./actions";
+import { loginAsync, registerAsync } from "./actions";
 import { UserState } from "./types";
 
 export type UserAction = ActionType<typeof user>;
 
 const initialState: UserState = {
     registering: false,
+    loggingIn: false,
     error: ""
 };
 
-const reducer: Reducer<UserState, UserAction> = (state = initialState, action: UserAction) => {
+const reducer = (state = initialState, action: UserAction) => {
     switch (action.type) {
         case getType(registerAsync.request):
             return {
-                ...state,
                 registering: true
             };
         case getType(registerAsync.success):
-            return {
-                ...state,
-                registering: false
-            };
+            return {};
         case getType(registerAsync.failure):
             return {
-                ...state,
-                registering: false,
+                error: action.payload.message
+            };
+        case getType(loginAsync.request):
+            return {
+                loggingIn: true
+            };
+        case getType(loginAsync.success):
+            return {};
+        case getType(loginAsync.failure):
+            return {
                 error: action.payload.message
             };
         default:

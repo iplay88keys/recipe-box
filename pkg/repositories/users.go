@@ -100,15 +100,15 @@ func (u *UsersRepository) Insert(username, email, password string) (int64, error
     return id, nil
 }
 
-func (u *UsersRepository) Verify(loginName, password string) (bool, int64, error) {
+func (u *UsersRepository) Verify(login, password string) (bool, int64, error) {
     parser := mail.AddressParser{}
-    _, err := parser.Parse(loginName)
+    _, err := parser.Parse(login)
 
     var result *sql.Row
     if err == nil {
-        result = u.db.QueryRow(verifyByEmailQuery, loginName)
+        result = u.db.QueryRow(verifyByEmailQuery, login)
     } else {
-        result = u.db.QueryRow(verifyByUsernameQuery, loginName)
+        result = u.db.QueryRow(verifyByUsernameQuery, login)
     }
 
     storedCreds := &Credentials{}

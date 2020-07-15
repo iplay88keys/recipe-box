@@ -11,8 +11,8 @@ import (
 )
 
 type UserLoginRequest struct {
-    LoginName string `json:"login_name"`
-    Password  string `json:"password"`
+    Login    string `json:"login"`
+    Password string `json:"password"`
 }
 
 type UserLoginResponse struct {
@@ -39,7 +39,7 @@ func Login(verify verify, createToken createToken, storeTokenDetails storeTokenD
                 return
             }
 
-            valid, userID, err := verify(user.LoginName, user.Password)
+            valid, userID, err := verify(user.Login, user.Password)
             if err != nil {
                 fmt.Println("Error logging user in")
                 fmt.Println(err)

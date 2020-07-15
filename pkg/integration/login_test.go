@@ -34,7 +34,7 @@ var _ = Describe("login", func() {
         Expect(err).ToNot(HaveOccurred())
 
         reqBody := []byte(fmt.Sprintf(`{
-            "login_name": "%s",
+            "login": "%s",
             "password": "%s"
         }`, username, password))
 
@@ -64,7 +64,7 @@ var _ = Describe("login", func() {
         Expect(err).ToNot(HaveOccurred())
 
         reqBody := []byte(fmt.Sprintf(`{
-            "login_name": "%s",
+            "login": "%s",
             "password": "%s"
         }`, username, "bad-password"))
 
