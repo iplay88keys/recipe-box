@@ -137,11 +137,14 @@ func connectToMySQL(databaseURL string) (*sql.DB, error) {
 }
 
 func connectToRedis(redisURL string) (redis.Cmdable, error) {
-    redisClient := redis.NewClient(&redis.Options{
-        Addr: redisURL,
-    })
+    options, err := redis.ParseURL(redisURL)
+    if err != nil {
+        return nil, err
+    }
 
-    _, err := redisClient.Ping().Result()
+    redisClient := redis.NewClient(options)
+
+    _, err = redisClient.Ping().Result()
     if err != nil {
         return nil, err
     }
