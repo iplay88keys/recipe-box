@@ -5,7 +5,7 @@ import (
     "fmt"
     "net/http"
 
-    "github.com/iplay88keys/recipe-box/pkg/api"
+    "github.com/iplay88keys/my-recipe-library/pkg/api"
 )
 
 type UserSignupResponse struct {

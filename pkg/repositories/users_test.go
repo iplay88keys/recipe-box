@@ -7,7 +7,7 @@ import (
     "github.com/DATA-DOG/go-sqlmock"
     "golang.org/x/crypto/bcrypt"
 
-    "github.com/iplay88keys/recipe-box/pkg/repositories"
+    "github.com/iplay88keys/my-recipe-library/pkg/repositories"
 
     . "github.com/onsi/ginkgo"
     . "github.com/onsi/gomega"

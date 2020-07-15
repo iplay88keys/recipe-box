@@ -13,7 +13,7 @@ import (
 
     _ "github.com/go-sql-driver/mysql"
 
-    . "github.com/iplay88keys/recipe-box/pkg/helpers"
+    . "github.com/iplay88keys/my-recipe-library/pkg/helpers"
 
     . "github.com/onsi/ginkgo"
     . "github.com/onsi/gomega"
@@ -51,7 +51,7 @@ var _ = BeforeSuite(func() {
             panic(err)
         }
 
-        pathToExecutable, err = gexec.Build("github.com/iplay88keys/recipe-box")
+        pathToExecutable, err = gexec.Build("github.com/iplay88keys/my-recipe-library")
         Expect(err).ToNot(HaveOccurred())
     }
 

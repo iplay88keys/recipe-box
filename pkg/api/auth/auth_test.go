@@ -7,9 +7,9 @@ import (
 
     . "github.com/onsi/gomega"
 
-    "github.com/iplay88keys/recipe-box/pkg/api/auth"
-    "github.com/iplay88keys/recipe-box/pkg/api/auth/authfakes"
-    "github.com/iplay88keys/recipe-box/pkg/token"
+    "github.com/iplay88keys/my-recipe-library/pkg/api/auth"
+    "github.com/iplay88keys/my-recipe-library/pkg/api/auth/authfakes"
+    "github.com/iplay88keys/my-recipe-library/pkg/token"
 
     . "github.com/onsi/ginkgo"
 )

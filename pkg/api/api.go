@@ -8,7 +8,7 @@ import (
 
     "github.com/gorilla/mux"
 
-    "github.com/iplay88keys/recipe-box/pkg/api/auth"
+    "github.com/iplay88keys/my-recipe-library/pkg/api/auth"
 )
 
 type Config struct {

@@ -4,7 +4,7 @@ import (
     . "github.com/onsi/ginkgo"
     . "github.com/onsi/gomega"
 
-    "github.com/iplay88keys/recipe-box/pkg/api/users"
+    "github.com/iplay88keys/my-recipe-library/pkg/api/users"
 )
 
 var _ = Describe("Validate", func() {

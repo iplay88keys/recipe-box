@@ -1,4 +1,4 @@
-module github.com/iplay88keys/recipe-box
+module github.com/iplay88keys/my-recipe-library
 
 go 1.12
 

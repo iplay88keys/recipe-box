@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/iplay88keys/recipe-box/pkg/api/auth"
-	"github.com/iplay88keys/recipe-box/pkg/token"
+	"github.com/iplay88keys/my-recipe-library/pkg/api/auth"
+	"github.com/iplay88keys/my-recipe-library/pkg/token"
 )
 
 type FakeTokenService struct {

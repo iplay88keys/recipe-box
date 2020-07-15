@@ -6,8 +6,8 @@ import (
 
     "github.com/DATA-DOG/go-sqlmock"
 
-    . "github.com/iplay88keys/recipe-box/pkg/helpers"
-    "github.com/iplay88keys/recipe-box/pkg/repositories"
+    . "github.com/iplay88keys/my-recipe-library/pkg/helpers"
+    "github.com/iplay88keys/my-recipe-library/pkg/repositories"
 
     . "github.com/onsi/ginkgo"
     . "github.com/onsi/gomega"

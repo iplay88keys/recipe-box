@@ -9,8 +9,8 @@ import (
     "github.com/go-redis/redis"
     "github.com/stretchr/testify/mock"
 
-    "github.com/iplay88keys/recipe-box/pkg/repositories"
-    "github.com/iplay88keys/recipe-box/pkg/token"
+    "github.com/iplay88keys/my-recipe-library/pkg/repositories"
+    "github.com/iplay88keys/my-recipe-library/pkg/token"
 
     . "github.com/onsi/ginkgo"
     . "github.com/onsi/gomega"

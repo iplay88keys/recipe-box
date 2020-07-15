@@ -5,9 +5,9 @@ import (
     "fmt"
     "io/ioutil"
 
-    "github.com/iplay88keys/recipe-box/pkg/api/recipes"
-    . "github.com/iplay88keys/recipe-box/pkg/helpers"
-    "github.com/iplay88keys/recipe-box/pkg/repositories"
+    "github.com/iplay88keys/my-recipe-library/pkg/api/recipes"
+    . "github.com/iplay88keys/my-recipe-library/pkg/helpers"
+    "github.com/iplay88keys/my-recipe-library/pkg/repositories"
 
     . "github.com/onsi/ginkgo"
     . "github.com/onsi/gomega"

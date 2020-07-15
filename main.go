@@ -12,14 +12,14 @@ import (
     "github.com/go-redis/redis"
     "github.com/gorilla/mux"
 
-    "github.com/iplay88keys/recipe-box/pkg/api/auth"
+    "github.com/iplay88keys/my-recipe-library/pkg/api/auth"
 
-    "github.com/iplay88keys/recipe-box/pkg/token"
+    "github.com/iplay88keys/my-recipe-library/pkg/token"
 
-    "github.com/iplay88keys/recipe-box/pkg/api"
-    "github.com/iplay88keys/recipe-box/pkg/api/recipes"
-    "github.com/iplay88keys/recipe-box/pkg/api/users"
-    "github.com/iplay88keys/recipe-box/pkg/repositories"
+    "github.com/iplay88keys/my-recipe-library/pkg/api"
+    "github.com/iplay88keys/my-recipe-library/pkg/api/recipes"
+    "github.com/iplay88keys/my-recipe-library/pkg/api/users"
+    "github.com/iplay88keys/my-recipe-library/pkg/repositories"
 
     _ "github.com/go-sql-driver/mysql"
 )

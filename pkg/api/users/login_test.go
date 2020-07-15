@@ -6,9 +6,9 @@ import (
     "net/http"
     "net/http/httptest"
 
-    "github.com/iplay88keys/recipe-box/pkg/token"
+    "github.com/iplay88keys/my-recipe-library/pkg/token"
 
-    "github.com/iplay88keys/recipe-box/pkg/api/users"
+    "github.com/iplay88keys/my-recipe-library/pkg/api/users"
 
     . "github.com/onsi/ginkgo"
     . "github.com/onsi/gomega"

@@ -9,9 +9,9 @@ import (
 
     "golang.org/x/crypto/bcrypt"
 
-    "github.com/iplay88keys/recipe-box/pkg/repositories"
+    "github.com/iplay88keys/my-recipe-library/pkg/repositories"
 
-    "github.com/iplay88keys/recipe-box/pkg/api/users"
+    "github.com/iplay88keys/my-recipe-library/pkg/api/users"
 
     . "github.com/onsi/ginkgo"
     . "github.com/onsi/gomega"

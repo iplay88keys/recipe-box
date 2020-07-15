@@ -70,7 +70,7 @@ fi
 
 
 echo "Setting required env vars"
-export REDIS_URL="127.0.0.1:6379"
+export REDIS_URL="redis://:@127.0.0.1:6379"
 export ACCESS_SECRET="access_secret"
 export REFRESH_SECRET="refresh_secret"
 

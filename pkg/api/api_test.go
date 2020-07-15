@@ -6,14 +6,14 @@ import (
     "net/http"
     "time"
 
-    "github.com/iplay88keys/recipe-box/pkg/token"
+    "github.com/iplay88keys/my-recipe-library/pkg/token"
 
-    "github.com/iplay88keys/recipe-box/pkg/api/auth/authfakes"
+    "github.com/iplay88keys/my-recipe-library/pkg/api/auth/authfakes"
 
-    "github.com/iplay88keys/recipe-box/pkg/api/auth"
+    "github.com/iplay88keys/my-recipe-library/pkg/api/auth"
 
-    "github.com/iplay88keys/recipe-box/pkg/api"
-    "github.com/iplay88keys/recipe-box/pkg/helpers"
+    "github.com/iplay88keys/my-recipe-library/pkg/api"
+    "github.com/iplay88keys/my-recipe-library/pkg/helpers"
 
     . "github.com/onsi/ginkgo"
     . "github.com/onsi/gomega"
