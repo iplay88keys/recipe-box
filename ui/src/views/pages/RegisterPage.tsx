@@ -12,7 +12,7 @@ interface State {}
 
 type AllProps = PropsFromDispatch & State
 
-class Register extends React.Component<AllProps, State> {
+class RegisterPage extends React.Component<AllProps, State> {
     render() {
         return (
             <Registration
@@ -28,4 +28,4 @@ const mapDispatchToProps = {
     register: registerAsync.request
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(Register);
+export default connect(mapStateToProps, mapDispatchToProps)(RegisterPage);

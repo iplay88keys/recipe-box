@@ -1,4 +1,4 @@
-# My Recipe Library
+# My RecipePage Library
 
 A React Redux website for storing recipes
 

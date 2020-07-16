@@ -23,7 +23,7 @@ interface State {
 
 type AllProps = PropsFromState & PropsFromDispatch & MatchParams
 
-class Recipe extends React.Component<AllProps, State> {
+class RecipePage extends React.Component<AllProps, State> {
     componentDidMount() {
         const {fetchRecipe} = this.props;
 
@@ -56,4 +56,4 @@ const mapDispatchToProps = {
     fetchRecipe: fetchRecipeAsync.request
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(Recipe);
+export default connect(mapStateToProps, mapDispatchToProps)(RecipePage);

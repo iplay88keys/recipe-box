@@ -48,3 +48,12 @@ func (r *RedisRepository) RetrieveTokenDetails(details *token.AccessDetails) (in
 
     return userID, nil
 }
+
+func (r *RedisRepository) DeleteTokenDetails(uuid string) (int64, error) {
+    deleted, err := r.client.Del(uuid).Result()
+    if err != nil {
+        return 0, err
+    }
+
+    return deleted, nil
+}

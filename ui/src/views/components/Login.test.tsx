@@ -4,22 +4,22 @@ import Enzyme, { mount, ReactWrapper } from "enzyme";
 import Adapter from "enzyme-adapter-react-16";
 import React, { ChangeEvent, FocusEvent } from "react";
 import { loginAsync } from "../../state/ducks/users/actions";
-import UserLogin, { UserLoginFormInner } from "./UserLogin";
+import Login, { LoginFormInner } from "./Login";
 
 Enzyme.configure({adapter: new Adapter()});
 
-describe("UserLogin", () => {
+describe("Login", () => {
     it("should render a form for logging in", () => {
         let login = jest.fn(loginAsync.request);
 
         const enzymeWrapper = mount(
-            <UserLogin
+            <Login
                 login={login}
             />
         );
 
-        expect(enzymeWrapper.find(UserLoginFormInner).find(TextField).at(0).text()).toEqual("Username/Email Address *Username/Email Address *");
-        expect(enzymeWrapper.find(UserLoginFormInner).find(TextField).at(1).text()).toEqual("Password *Password *");
+        expect(enzymeWrapper.find(LoginFormInner).find(TextField).at(0).text()).toEqual("Username/Email Address *Username/Email Address *");
+        expect(enzymeWrapper.find(LoginFormInner).find(TextField).at(1).text()).toEqual("Password *Password *");
     });
 
     describe("form validation errors", () => {
@@ -29,7 +29,7 @@ describe("UserLogin", () => {
             let login = jest.fn(loginAsync.request);
 
             enzymeWrapper = mount(
-                <UserLogin
+                <Login
                     login={login}
                 />
             );
@@ -39,7 +39,7 @@ describe("UserLogin", () => {
         describe("login", () => {
             beforeEach(async () => {
                 await act(async () => {
-                    enzymeWrapper.find(UserLoginFormInner).find(TextField).at(0).props().onBlur!({
+                    enzymeWrapper.find(LoginFormInner).find(TextField).at(0).props().onBlur!({
                         preventDefault() {},
                         target: {
                             name: "login"
@@ -52,7 +52,7 @@ describe("UserLogin", () => {
 
             it("is required", async () => {
                 await act(async () => {
-                    enzymeWrapper.find(UserLoginFormInner).find(TextField).at(0).props().onChange!({
+                    enzymeWrapper.find(LoginFormInner).find(TextField).at(0).props().onChange!({
                         preventDefault() {},
                         target: {
                             name: "login",
@@ -62,9 +62,9 @@ describe("UserLogin", () => {
                 });
 
                 enzymeWrapper.update();
-                expect(enzymeWrapper.find(UserLoginFormInner).find(TextField).at(0).props().value).toEqual("");
-                expect(enzymeWrapper.find(UserLoginFormInner).find(TextField).at(0).props().error).toEqual(true);
-                expect(enzymeWrapper.find(UserLoginFormInner).find(TextField).at(0).props().helperText)
+                expect(enzymeWrapper.find(LoginFormInner).find(TextField).at(0).props().value).toEqual("");
+                expect(enzymeWrapper.find(LoginFormInner).find(TextField).at(0).props().error).toEqual(true);
+                expect(enzymeWrapper.find(LoginFormInner).find(TextField).at(0).props().helperText)
                     .toEqual("Required");
             });
         });
@@ -72,7 +72,7 @@ describe("UserLogin", () => {
         describe("password", () => {
             beforeEach(async () => {
                 await act(async () => {
-                    enzymeWrapper.find(UserLoginFormInner).find(TextField).at(1).props().onBlur!({
+                    enzymeWrapper.find(LoginFormInner).find(TextField).at(1).props().onBlur!({
                         preventDefault() {},
                         target: {
                             name: "password"
@@ -85,7 +85,7 @@ describe("UserLogin", () => {
 
             it("is required", async () => {
                 await act(async () => {
-                    enzymeWrapper.find(UserLoginFormInner).find(TextField).at(1).props().onChange!({
+                    enzymeWrapper.find(LoginFormInner).find(TextField).at(1).props().onChange!({
                         preventDefault() {},
                         target: {
                             name: "password",
@@ -95,9 +95,9 @@ describe("UserLogin", () => {
                 });
 
                 enzymeWrapper.update();
-                expect(enzymeWrapper.find(UserLoginFormInner).find(TextField).at(1).props().value).toEqual("");
-                expect(enzymeWrapper.find(UserLoginFormInner).find(TextField).at(1).props().error).toEqual(true);
-                expect(enzymeWrapper.find(UserLoginFormInner).find(TextField).at(1).props().helperText)
+                expect(enzymeWrapper.find(LoginFormInner).find(TextField).at(1).props().value).toEqual("");
+                expect(enzymeWrapper.find(LoginFormInner).find(TextField).at(1).props().error).toEqual(true);
+                expect(enzymeWrapper.find(LoginFormInner).find(TextField).at(1).props().helperText)
                     .toEqual("Required");
             });
         });
@@ -108,20 +108,20 @@ describe("UserLogin", () => {
             let login = jest.fn(loginAsync.request);
 
             let enzymeWrapper = mount(
-                <UserLogin
+                <Login
                     login={login}
                 />
             );
 
             await act(async () => {
-                enzymeWrapper.find(UserLoginFormInner).props().setStatus({"login": "Api Error"});
+                enzymeWrapper.find(LoginFormInner).props().setStatus({"login": "Api Error"});
             });
 
             enzymeWrapper.update();
-            expect(enzymeWrapper.find(UserLoginFormInner).find(TextField).at(0).props().value)
+            expect(enzymeWrapper.find(LoginFormInner).find(TextField).at(0).props().value)
                 .toEqual("");
-            expect(enzymeWrapper.find(UserLoginFormInner).find(TextField).at(0).props().error).toEqual(true);
-            expect(enzymeWrapper.find(UserLoginFormInner).find(TextField).at(0).props().helperText)
+            expect(enzymeWrapper.find(LoginFormInner).find(TextField).at(0).props().error).toEqual(true);
+            expect(enzymeWrapper.find(LoginFormInner).find(TextField).at(0).props().helperText)
                 .toEqual("Api Error");
         });
 
@@ -129,20 +129,20 @@ describe("UserLogin", () => {
             let login = jest.fn(loginAsync.request);
 
             let enzymeWrapper = mount(
-                <UserLogin
+                <Login
                     login={login}
                 />
             );
 
             await act(async () => {
-                enzymeWrapper.find(UserLoginFormInner).props().setStatus({"password": "Api Error"});
+                enzymeWrapper.find(LoginFormInner).props().setStatus({"password": "Api Error"});
             });
 
             enzymeWrapper.update();
-            expect(enzymeWrapper.find(UserLoginFormInner).find(TextField).at(1).props().value)
+            expect(enzymeWrapper.find(LoginFormInner).find(TextField).at(1).props().value)
                 .toEqual("");
-            expect(enzymeWrapper.find(UserLoginFormInner).find(TextField).at(1).props().error).toEqual(true);
-            expect(enzymeWrapper.find(UserLoginFormInner).find(TextField).at(1).props().helperText)
+            expect(enzymeWrapper.find(LoginFormInner).find(TextField).at(1).props().error).toEqual(true);
+            expect(enzymeWrapper.find(LoginFormInner).find(TextField).at(1).props().helperText)
                 .toEqual("Api Error");
         });
     });

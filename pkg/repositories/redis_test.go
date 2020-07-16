@@ -163,4 +163,30 @@ var _ = Describe("Redis Repository", func() {
             Expect(err.Error()).To(ContainSubstring("invalid syntax"))
         })
     })
+
+    Describe("DeleteTokenDetails", func() {
+        It("deletes access token details", func() {
+            redisRepo := repositories.NewRedisRepository(redisClient)
+
+            redisClient.On("Del", []string{"access uuid"}).
+                Return(redis.NewIntResult(0, nil))
+
+            deleted, err := redisRepo.DeleteTokenDetails("access uuid")
+            Expect(err).ToNot(HaveOccurred())
+            Expect(deleted).To(BeEquivalentTo(0))
+
+            redisClient.AssertNumberOfCalls(GinkgoT(), "Del", 1)
+        })
+
+        It("returns an error if the delete fails", func() {
+            redisRepo := repositories.NewRedisRepository(redisClient)
+
+            redisClient.On("Del", []string{"access uuid"}).
+                Return(redis.NewIntResult(1, errors.New("some redis error")))
+
+            _, err := redisRepo.DeleteTokenDetails("access uuid")
+            Expect(err).To(HaveOccurred())
+            Expect(err).To(MatchError("some redis error"))
+        })
+    })
 })

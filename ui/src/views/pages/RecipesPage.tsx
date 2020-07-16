@@ -18,7 +18,7 @@ interface State {}
 
 type AllProps = PropsFromState & PropsFromDispatch
 
-class Recipes extends React.Component<AllProps, State> {
+class RecipesPage extends React.Component<AllProps, State> {
     componentDidMount() {
         const {fetchRecipes} = this.props;
 
@@ -42,4 +42,4 @@ const mapDispatchToProps = {
     fetchRecipes: fetchRecipesAsync.request
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(Recipes);
+export default connect(mapStateToProps, mapDispatchToProps)(RecipesPage);

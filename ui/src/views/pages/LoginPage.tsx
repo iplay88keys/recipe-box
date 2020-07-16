@@ -1,21 +1,28 @@
 import React from "react";
 import { connect } from "react-redux";
 import { ApplicationState } from "../../state/ducks";
-import { loginAsync } from "../../state/ducks/users/actions";
-import UserLogin from "../components/UserLogin";
+import { loginAsync, logout } from "../../state/ducks/users/actions";
+import Login from "../components/Login";
 
 interface PropsFromDispatch {
     login: typeof loginAsync.request
+    logout: typeof logout
 }
 
 interface State {}
 
 type AllProps = PropsFromDispatch & State
 
-class Login extends React.Component<AllProps, State> {
+class LoginPage extends React.Component<AllProps, State> {
+    constructor(props: AllProps) {
+        super(props);
+
+        this.props.logout();
+    }
+
     render() {
         return (
-            <UserLogin
+            <Login
                 login={this.props.login}
             />
         );
@@ -25,7 +32,8 @@ class Login extends React.Component<AllProps, State> {
 const mapStateToProps = ({}: ApplicationState) => ({});
 
 const mapDispatchToProps = {
-    login: loginAsync.request
+    login: loginAsync.request,
+    logout: logout
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(Login);
+export default connect(mapStateToProps, mapDispatchToProps)(LoginPage);

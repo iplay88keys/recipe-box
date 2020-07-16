@@ -3,7 +3,7 @@ import { call, put, takeEvery } from "redux-saga/effects";
 import Api from "../../../api/api";
 import { history } from "../../../helpers/history";
 import { loginAsync, registerAsync } from "./actions";
-import { LoginResponse, UserActionTypes } from "./types";
+import { LoginResponse, LogoutRequest, UserActionTypes } from "./types";
 
 export function* registerSaga(action: ReturnType<typeof registerAsync.request>): Generator {
     try {
@@ -39,6 +39,22 @@ export function* loginSaga(action: ReturnType<typeof loginAsync.request>): Gener
     }
 }
 
+export function* logoutSaga(): Generator {
+    let token = localStorage.getItem("access_token") || null;
+
+    let payload = {
+        access_token: token
+    } as LogoutRequest;
+
+    try {
+        yield call(Api.post, "/api/v1/users/logout", JSON.stringify(payload), false);
+    } catch (err) {}
+
+    localStorage.removeItem("access_token");
+
+    history.push("/login");
+}
+
 function* watchRegister() {
     yield takeEvery(UserActionTypes.REGISTER_REQUEST, registerSaga);
 }
@@ -47,5 +63,9 @@ function* watchLogin() {
     yield takeEvery(UserActionTypes.LOGIN_REQUEST, loginSaga);
 }
 
-const userSagas = [watchRegister(), watchLogin()];
+function* watchLogout() {
+    yield takeEvery(UserActionTypes.LOGOUT, logoutSaga);
+}
+
+const userSagas = [watchRegister(), watchLogin(), watchLogout()];
 export default userSagas;

@@ -105,6 +105,10 @@ func main() {
                 tokenService.CreateToken,
                 redisRepo.StoreTokenDetails,
             ),
+            users.Logout(
+                tokenService.ValidateToken,
+                redisRepo.DeleteTokenDetails,
+            ),
         },
     })
 

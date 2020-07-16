@@ -1,18 +1,18 @@
 import { createMuiTheme, CssBaseline } from "@material-ui/core";
 import { ThemeProvider } from "@material-ui/styles";
-import "bootstrap/dist/css/bootstrap.min.css";
 import React from "react";
 import { connect } from "react-redux";
-import { Route, Router, Switch } from "react-router-dom";
+import { Redirect, Route, Router, Switch } from "react-router-dom";
 import styled from "styled-components";
 import { history } from "../helpers/history";
 import { ApplicationState } from "../state/ducks";
+import { LoggedInRedirect } from "./components/LoggedInRedirect";
 import { Navigation } from "./components/Navigation";
 import { PrivateRoute } from "./components/PrivateRoute";
-import Login from "./pages/login";
-import Recipe from "./pages/recipe";
-import Recipes from "./pages/recipes";
-import Register from "./pages/register";
+import Login from "./pages/LoginPage";
+import Recipe from "./pages/RecipePage";
+import Recipes from "./pages/RecipesPage";
+import Register from "./pages/RegisterPage";
 
 const StyledApp = styled.div`
   height: 100%;
@@ -21,7 +21,9 @@ const StyledApp = styled.div`
   padding-top: 30px;
 `;
 
-interface PropsFromState {}
+interface PropsFromState {
+    loggedIn: boolean
+}
 
 interface PropsFromDispatch {}
 
@@ -49,15 +51,15 @@ class App extends React.Component<AllProps, State> {
                 <ThemeProvider theme={theme}>
                     <CssBaseline/>
                     <div>
-                        <Navigation/>
+                        <Navigation loggedIn={this.props.loggedIn}/>
                         <StyledApp>
                             <Switch>
                                 <Route exact path="/" component={Recipes}/>
-                                <Route exact path="/register" component={Register}/>
+                                <LoggedInRedirect exact path="/register" component={Register}/>
                                 <Route exact path="/login" component={Login}/>
                                 <PrivateRoute exact path="/recipes" component={Recipes}/>
                                 <PrivateRoute exact path="/recipes/:recipeID" component={Recipe}/>
-                                {/*<Redirect from="*" to="/"/>*/}
+                                <Redirect from="*" to="/"/>
                             </Switch>
                         </StyledApp>
                     </div>
@@ -65,9 +67,11 @@ class App extends React.Component<AllProps, State> {
             </Router>
         );
     }
-};
+}
 
-const mapStateToProps = ({}: ApplicationState) => ({});
+const mapStateToProps = ({users}: ApplicationState) => ({
+    loggedIn: users.loggedIn
+});
 
 const mapDispatchToProps = {};
 

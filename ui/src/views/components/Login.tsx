@@ -22,18 +22,18 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
-export interface UserLoginFormValues {
+export interface LoginFormValues {
     login: string,
     password: string,
     doLogin: typeof loginAsync.request
 }
 
-const showError = (field: string, formikProps: FormikProps<UserLoginFormValues>): boolean => {
+const showError = (field: string, formikProps: FormikProps<LoginFormValues>): boolean => {
     return (!getIn(formikProps.touched, field) && !!formikProps.status && !!getIn(formikProps.status, field)) ||
         (!!getIn(formikProps.touched, field) && !!getIn(formikProps.errors, field));
 };
 
-const errorMessage = (field: string, formikProps: FormikProps<UserLoginFormValues>): string => {
+const errorMessage = (field: string, formikProps: FormikProps<LoginFormValues>): string => {
     if (!getIn(formikProps.touched, field) && !!formikProps.status && !!getIn(formikProps.status, field)) {
         return getIn(formikProps.status, field);
     } else if (!!getIn(formikProps.touched, field) && !!getIn(formikProps.errors, field)) {
@@ -43,7 +43,7 @@ const errorMessage = (field: string, formikProps: FormikProps<UserLoginFormValue
     }
 };
 
-let handleSubmit = (values: UserLoginFormValues, props: FormikHelpers<UserLoginFormValues>) => {
+let handleSubmit = (values: LoginFormValues, props: FormikHelpers<LoginFormValues>) => {
     const {doLogin} = values;
     if (values.login && values.password) {
         let user: LoginRequest = {
@@ -56,7 +56,7 @@ let handleSubmit = (values: UserLoginFormValues, props: FormikHelpers<UserLoginF
     }
 
     props.setSubmitting(false);
-    let newTouched = {} as FormikTouched<UserLoginFormValues>;
+    let newTouched = {} as FormikTouched<LoginFormValues>;
     Object.keys(values).map(key => {
         newTouched = {...newTouched, [key]: false};
     });
@@ -64,7 +64,7 @@ let handleSubmit = (values: UserLoginFormValues, props: FormikHelpers<UserLoginF
     props.setTouched(newTouched);
 };
 
-export const UserLoginFormInner = (props: FormikProps<UserLoginFormValues>) => {
+export const LoginFormInner = (props: FormikProps<LoginFormValues>) => {
     const {handleSubmit, getFieldProps, isSubmitting} = props;
 
     const classes = useStyles();
@@ -118,12 +118,12 @@ export const UserLoginFormInner = (props: FormikProps<UserLoginFormValues>) => {
     );
 };
 
-interface UserLoginFormProps {
+interface LoginFormProps {
     login: typeof loginAsync.request
 }
 
-export default withFormik<UserLoginFormProps, UserLoginFormValues>({
-    mapPropsToValues: (props: UserLoginFormProps): UserLoginFormValues => ({
+export default withFormik<LoginFormProps, LoginFormValues>({
+    mapPropsToValues: (props: LoginFormProps): LoginFormValues => ({
         login: "",
         password: "",
         doLogin: props.login
@@ -135,4 +135,4 @@ export default withFormik<UserLoginFormProps, UserLoginFormValues>({
                      .required("Required")
     }),
     handleSubmit: handleSubmit
-})(UserLoginFormInner);
+})(LoginFormInner);

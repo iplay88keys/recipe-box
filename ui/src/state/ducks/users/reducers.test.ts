@@ -16,13 +16,21 @@ describe("reducer", () => {
             const updatedState = userReducer(undefined, registerAsync.request(req, mockSetErrors));
 
             expect(updatedState).toEqual({
+                "error": "",
+                "loggedIn": false,
+                "loggingIn": false,
                 "registering": true
             });
         });
 
         it("should handle REGISTER_SUCCESS", () => {
             const updatedState = userReducer(undefined, registerAsync.success());
-            expect(updatedState).toEqual({});
+            expect(updatedState).toEqual({
+                "error": "",
+                "loggedIn": false,
+                "loggingIn": false,
+                "registering": false
+            });
         });
 
         it("should handle REGISTER_FAILURE", () => {
@@ -33,7 +41,10 @@ describe("reducer", () => {
             const updatedState = userReducer(undefined, registerAsync.failure(err));
 
             expect(updatedState).toEqual({
-                "error": "some error"
+                "error": "some error",
+                "loggedIn": false,
+                "loggingIn": false,
+                "registering": false
             });
         });
     });
@@ -50,13 +61,21 @@ describe("reducer", () => {
             const updatedState = userReducer(undefined, loginAsync.request(req, mockSetErrors));
 
             expect(updatedState).toEqual({
-                "loggingIn": true
+                "error": "",
+                "loggedIn": false,
+                "loggingIn": true,
+                "registering": false
             });
         });
 
         it("should handle LOGIN_SUCCESS", () => {
             const updatedState = userReducer(undefined, loginAsync.success());
-            expect(updatedState).toEqual({});
+            expect(updatedState).toEqual({
+                "error": "",
+                "loggedIn": true,
+                "loggingIn": false,
+                "registering": false
+            });
         });
 
         it("should handle LOGIN_FAILURE", () => {
@@ -66,7 +85,10 @@ describe("reducer", () => {
 
             const updatedState = userReducer(undefined, loginAsync.failure(err));
             expect(updatedState).toEqual({
-                "error": "some error"
+                "error": "some error",
+                "loggedIn": false,
+                "loggingIn": false,
+                "registering": false
             });
         });
     });

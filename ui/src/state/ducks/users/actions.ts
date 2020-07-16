@@ -1,7 +1,7 @@
 import { FormikErrors } from "formik";
-import { createAsyncAction } from "typesafe-actions";
+import { createAction, createAsyncAction } from "typesafe-actions";
+import { LoginFormValues } from "../../../views/components/Login";
 import { RegistrationFormValues } from "../../../views/components/Registration";
-import { UserLoginFormValues } from "../../../views/components/UserLogin";
 import { LoginRequest, RegisterRequest, UserActionTypes } from "./types";
 
 export const registerAsync = createAsyncAction(
@@ -14,4 +14,6 @@ export const loginAsync = createAsyncAction(
     UserActionTypes.LOGIN_REQUEST,
     UserActionTypes.LOGIN_SUCCESS,
     UserActionTypes.LOGIN_FAILURE
-)<[LoginRequest, (errors: FormikErrors<UserLoginFormValues>) => void], undefined, Error>();
+)<[LoginRequest, (errors: FormikErrors<LoginFormValues>) => void], undefined, Error>();
+
+export const logout = createAction(UserActionTypes.LOGOUT)<void>();

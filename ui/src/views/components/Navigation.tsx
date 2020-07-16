@@ -1,6 +1,7 @@
-import { AppBar, Button, Container, CssBaseline, Link, Toolbar, Typography } from "@material-ui/core";
+import { AppBar, Button, Container, CssBaseline, Link, Toolbar } from "@material-ui/core";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import React from "react";
+import { Link as RouterLink } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
     "@global": {
@@ -24,7 +25,11 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
-export const Navigation = () => {
+interface NavigationProps {
+    loggedIn: boolean
+}
+
+export const Navigation = ({loggedIn}: NavigationProps) => {
     const classes = useStyles();
 
     return (
@@ -32,20 +37,36 @@ export const Navigation = () => {
             <CssBaseline/>
             <AppBar position="static" color="default" elevation={0} className={classes.appBar}>
                 <Toolbar className={classes.toolbar}>
-                    <Typography variant="h6" color="inherit" noWrap className={classes.toolbarTitle}>
-                        My Recipe Library
-                    </Typography>
+                    <div className={classes.toolbarTitle}>
+                        <Link to="/" component={RouterLink} color="textPrimary" underline="none" variant="h6">
+                            My Recipe Library
+                        </Link>
+                    </div>
+                    {loggedIn &&
                     <nav>
-                        <Link variant="button" color="textPrimary" href="/" className={classes.link}>
-                            Home
-                        </Link>
-                        <Link variant="button" color="textPrimary" href="/recipes" className={classes.link}>
+                        <Button to="/recipes" component={RouterLink} color="primary" className={classes.link}>
                             Recipes
-                        </Link>
+                        </Button>
                     </nav>
-                    <Button href="/register" color="primary" variant="outlined" className={classes.link}>
-                        Register
+                    }
+                    {!loggedIn &&
+                    <div>
+                        <Button to="/register" component={RouterLink} color="primary" variant="outlined"
+                                className={classes.link}>
+                            Register
+                        </Button>
+                        <Button to="/login" component={RouterLink} color="primary" variant="contained"
+                                className={classes.link}>
+                            Login
+                        </Button>
+                    </div>
+                    }
+                    {loggedIn &&
+                    <Button to="/login" component={RouterLink} color="secondary" variant="contained"
+                            className={classes.link}>
+                        Logout
                     </Button>
+                    }
                 </Toolbar>
             </AppBar>
         </Container>

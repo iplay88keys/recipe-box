@@ -19,6 +19,10 @@ export interface LoginResponse {
     errors: APIError
 }
 
+export interface LogoutRequest {
+    access_token: string
+}
+
 export interface APIError {
     [key: string]: string
 }
@@ -26,6 +30,7 @@ export interface APIError {
 export interface UserState {
     registering: boolean
     loggingIn: boolean
+    loggedIn: boolean
     error: string
 }
 
@@ -36,4 +41,5 @@ export enum UserActionTypes {
     LOGIN_REQUEST = "@@user/LOGIN_REQUEST",
     LOGIN_SUCCESS = "@@user/LOGIN_SUCCESS",
     LOGIN_FAILURE = "@@user/LOGIN_FAILURE",
+    LOGOUT = "@@user/LOGOUT",
 }
