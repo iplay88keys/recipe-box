@@ -1,0 +1,2 @@
+# Required for Node.js buildpack to correctly compile the ui folder
+# See package.json for script that triggers the correct build
