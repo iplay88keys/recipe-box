@@ -110,7 +110,6 @@ var _ = Describe("GetRecipe", func() {
             req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://localhost:%s/api/v1/recipes/%d", port, recipeID), nil)
             Expect(err).ToNot(HaveOccurred())
 
-            req.Header.Set("Content-Type", "application/json")
             req.Header.Set("Authorization", fmt.Sprintf("bearer %s", token))
 
             resp, err := client.Do(req)
@@ -177,8 +176,6 @@ var _ = Describe("GetRecipe", func() {
     It("returns unauthorized when not authenticated", func() {
         req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://localhost:%s/api/v1/recipes/%d", port, recipeID), nil)
         Expect(err).ToNot(HaveOccurred())
-
-        req.Header.Set("Content-Type", "application/json")
 
         resp, err := client.Do(req)
         Expect(err).ToNot(HaveOccurred())
