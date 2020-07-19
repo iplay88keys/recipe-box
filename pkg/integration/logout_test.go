@@ -38,7 +38,12 @@ var _ = Describe("logout", func() {
             "password": "%s"
         }`, username, password))
 
-        resp, err := http.Post(fmt.Sprintf("http://localhost:%s/api/v1/users/login", port), "application/json", bytes.NewBuffer(reqBody))
+        req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://localhost:%s/api/v1/users/login", port), bytes.NewBuffer(reqBody))
+        Expect(err).ToNot(HaveOccurred())
+
+        req.Header.Set("Content-Type", "application/json")
+
+        resp, err := client.Do(req)
         Expect(err).ToNot(HaveOccurred())
 
         Expect(resp.StatusCode).To(Equal(200))
@@ -58,6 +63,7 @@ var _ = Describe("logout", func() {
         req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://localhost:%s/api/v1/users/logout", port), nil)
         Expect(err).ToNot(HaveOccurred())
 
+        req.Header.Set("Content-Type", "application/json")
         req.Header.Add("Authorization", "bearer "+token)
 
         resp, err := client.Do(req)
@@ -69,6 +75,8 @@ var _ = Describe("logout", func() {
     It("returns unauthorized if the token is invalid", func() {
         req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://localhost:%s/api/v1/users/logout", port), nil)
         Expect(err).ToNot(HaveOccurred())
+
+        req.Header.Set("Content-Type", "application/json")
 
         resp, err := client.Do(req)
         Expect(err).ToNot(HaveOccurred())

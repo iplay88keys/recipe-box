@@ -2,6 +2,7 @@ package api_test
 
 import (
     "errors"
+    "fmt"
     "io/ioutil"
     "net/http"
     "time"
@@ -79,7 +80,7 @@ var _ = Describe("API", func() {
             Timeout: 15 * time.Second,
         }
 
-        resp, err := client.Get("http://localhost:" + port)
+        resp, err := client.Get(fmt.Sprintf("http://localhost:%s", port))
         Expect(err).ToNot(HaveOccurred())
         Expect(resp.StatusCode).To(Equal(http.StatusOK))
 
@@ -96,7 +97,12 @@ var _ = Describe("API", func() {
             Timeout: 15 * time.Second,
         }
 
-        resp, err := client.Get("http://localhost:" + port + "/api/v1/test-unauthenticated-endpoint")
+        req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://localhost:%s/api/v1/test-unauthenticated-endpoint", port), nil)
+        Expect(err).ToNot(HaveOccurred())
+
+        req.Header.Set("Content-Type", "application/json")
+
+        resp, err := client.Do(req)
         Expect(err).ToNot(HaveOccurred())
         Expect(resp.StatusCode).To(Equal(http.StatusOK))
 
@@ -113,8 +119,10 @@ var _ = Describe("API", func() {
             Timeout: 15 * time.Second,
         }
 
-        req, err := http.NewRequest(http.MethodGet, "http://localhost:" + port + "/api/v1/test-authenticated-endpoint", nil)
+        req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://localhost:%s/api/v1/test-authenticated-endpoint", port), nil)
         Expect(err).ToNot(HaveOccurred())
+
+        req.Header.Set("Content-Type", "application/json")
         req.Header.Set("Authorization", "bearer token")
 
         resp, err := client.Do(req)
@@ -134,7 +142,7 @@ var _ = Describe("API", func() {
             Timeout: 15 * time.Second,
         }
 
-        resp, err := client.Get("http://localhost:" + port + "/static.html")
+        resp, err := client.Get(fmt.Sprintf("http://localhost:%s/static.html", port))
         Expect(err).ToNot(HaveOccurred())
         Expect(resp.StatusCode).To(Equal(http.StatusOK))
 
@@ -151,7 +159,13 @@ var _ = Describe("API", func() {
             Timeout: 15 * time.Second,
         }
 
-        resp, err := client.Get("http://localhost:" + port + "/api/v1/non-existent")
+        req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://localhost:%s/api/v1/non-existent", port), nil)
+        Expect(err).ToNot(HaveOccurred())
+
+        req.Header.Set("Content-Type", "application/json")
+        req.Header.Set("Authorization", "bearer token")
+
+        resp, err := client.Do(req)
         Expect(err).ToNot(HaveOccurred())
         Expect(resp.StatusCode).To(Equal(http.StatusNotFound))
 
@@ -168,7 +182,12 @@ var _ = Describe("API", func() {
             Timeout: 15 * time.Second,
         }
 
-        resp, err := client.Get("http://localhost:" + port + "/api/v1/test-authenticated-endpoint")
+        req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://localhost:%s/api/v1/test-authenticated-endpoint", port), nil)
+        Expect(err).ToNot(HaveOccurred())
+
+        req.Header.Set("Content-Type", "application/json")
+
+        resp, err := client.Do(req)
         Expect(err).ToNot(HaveOccurred())
         Expect(resp.StatusCode).To(Equal(http.StatusUnauthorized))
     })

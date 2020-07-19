@@ -41,6 +41,8 @@ var _ = Describe("login", func() {
         req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://localhost:%s/api/v1/users/login", port), bytes.NewBuffer(reqBody))
         Expect(err).ToNot(HaveOccurred())
 
+        req.Header.Set("Content-Type", "application/json")
+
         resp, err := client.Do(req)
         Expect(err).ToNot(HaveOccurred())
 
@@ -70,6 +72,8 @@ var _ = Describe("login", func() {
 
         req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://localhost:%s/api/v1/users/login", port), bytes.NewBuffer(reqBody))
         Expect(err).ToNot(HaveOccurred())
+
+        req.Header.Set("Content-Type", "application/json")
 
         resp, err := client.Do(req)
         Expect(err).ToNot(HaveOccurred())

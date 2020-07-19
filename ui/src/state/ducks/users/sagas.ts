@@ -47,7 +47,7 @@ export function* logoutSaga(): Generator {
     } as LogoutRequest;
 
     try {
-        yield call(Api.post, "/api/v1/users/logout", JSON.stringify(payload), false);
+        yield call(Api.post, "/api/v1/users/logout", JSON.stringify(payload));
     } catch (err) {}
 
     localStorage.removeItem("access_token");
