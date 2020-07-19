@@ -1,6 +1,7 @@
 import { AxiosResponse } from "axios";
 import { call, put, takeEvery } from "redux-saga/effects";
 import Api from "../../../api/api";
+import { logout } from "../users/actions";
 import { fetchRecipeAsync, fetchRecipesAsync } from "./actions";
 import { RecipeActionTypes, RecipeListResponse, RecipeResponse } from "./types";
 
@@ -11,8 +12,9 @@ export function* listRecipesSaga(): Generator {
         yield put(fetchRecipesAsync.success((response.data) as RecipeListResponse));
     } catch (err) {
         if (err.response && err.response.status === 401) {
-            // log out
+            yield put(logout());
         }
+
         yield put(fetchRecipesAsync.failure(err));
     }
 }
@@ -24,7 +26,7 @@ export function* getRecipeSaga(action: ReturnType<typeof fetchRecipeAsync.reques
         yield put(fetchRecipeAsync.success((response.data) as RecipeResponse));
     } catch (err) {
         if (err.response && err.response.status === 401) {
-            // log out
+            yield put(logout());
         }
 
         yield put(fetchRecipeAsync.failure(err));
