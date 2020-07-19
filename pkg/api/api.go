@@ -26,7 +26,9 @@ type API struct {
 func New(config *Config) *API {
     r := mux.NewRouter()
 
-    api := r.PathPrefix("/api/v1").Subrouter()
+    api := r.PathPrefix("/api/v1").
+        Headers("Content-Type", "application/json").
+        Subrouter()
 
     for _, endpoint := range config.Endpoints {
         handler := endpoint.Handler

@@ -10,7 +10,6 @@ import (
     "syscall"
 
     "github.com/go-redis/redis"
-    "github.com/gorilla/mux"
 
     "github.com/iplay88keys/my-recipe-library/pkg/api/auth"
 
@@ -83,7 +82,6 @@ func main() {
 
     userVerificationMiddleware := auth.NewMiddleware(tokenService, redisRepo)
 
-    mux.NewRouter()
     a := api.New(&api.Config{
         Port:           port,
         StaticDir:      static,
