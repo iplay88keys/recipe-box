@@ -7,7 +7,6 @@ export default class Api {
         let config = {
             headers: {
                 "Accept": "application/json",
-                "Content-Type": "application/json",
                 ...(auth && token && {"Authorization": "bearer " + token})
             }
         };

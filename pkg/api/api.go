@@ -27,7 +27,6 @@ func New(config *Config) *API {
     r := mux.NewRouter()
 
     api := r.PathPrefix("/api/v1").
-        Headers("Content-Type", "application/json").
         Subrouter()
 
     for _, endpoint := range config.Endpoints {
@@ -36,9 +35,18 @@ func New(config *Config) *API {
             handler = config.AuthMiddleware.Handler(endpoint.Handler)
         }
 
-        api.HandleFunc(fmt.Sprintf("/%s", endpoint.Path), handler).Methods(endpoint.Method)
+        if endpoint.Method == http.MethodPost || endpoint.Method == http.MethodPut || endpoint.Method == http.MethodPatch {
+            api.HandleFunc(fmt.Sprintf("/%s", endpoint.Path), handler).
+                Methods(endpoint.Method).
+                Headers("Content-Type", "application/json")
+        } else {
+            api.HandleFunc(fmt.Sprintf("/%s", endpoint.Path), handler).
+                Methods(endpoint.Method)
+        }
     }
     api.NotFoundHandler = http.HandlerFunc(notFound)
+
+    r.PathPrefix("/api/v1").Subrouter().NotFoundHandler = http.HandlerFunc(notFound)
 
     spa := spaHandler{
         staticPath: config.StaticDir,
