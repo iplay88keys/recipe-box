@@ -91,13 +91,13 @@ func (r *RecipesRepository) Insert(recipe *Recipe, userID int64) (int64, error) 
     )
 
     if err != nil {
-        fmt.Printf("Recipe could not be saved: %s\n", err.Error())
+        fmt.Printf("RecipeResponse could not be saved: %s\n", err.Error())
         return 0, errors.New("recipe could not be saved")
     }
 
     id, err := res.LastInsertId()
     if err != nil {
-        fmt.Printf("Recipe was not saved correctly: %s\n", err.Error())
+        fmt.Printf("RecipeResponse was not saved correctly: %s\n", err.Error())
         return 0, errors.New(fmt.Sprintf("recipe was not saved correctly: %s", err.Error()))
     }
 

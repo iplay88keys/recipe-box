@@ -4,7 +4,7 @@ import { RouteComponentProps } from "react-router";
 import { ApplicationState } from "../../state/ducks";
 import { fetchRecipeAsync } from "../../state/ducks/recipes/actions";
 import { RecipeResponse } from "../../state/ducks/recipes/types";
-import { SingleRecipe } from "../components/SingleRecipe";
+import { Recipe } from "../components/Recipe";
 
 interface PropsFromState {
     recipe: RecipeResponse
@@ -39,7 +39,7 @@ class RecipePage extends React.Component<AllProps, State> {
 
     render() {
         return (
-            <SingleRecipe
+            <Recipe
                 recipe={this.props.recipe}
                 loading={this.props.loading}
             />

@@ -9,7 +9,7 @@ import { RecipeList, StyledTableRow } from "./RecipeList";
 
 Enzyme.configure({adapter: new Adapter()});
 
-describe("RecipeList", () => {
+describe("RecipeListResponse", () => {
     let history: MemoryHistory;
     let matchParam: match<{ id: string }>;
     let location: Location;

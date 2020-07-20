@@ -2,14 +2,11 @@ package recipes_test
 
 import (
     "database/sql"
+    "encoding/json"
     "errors"
     "net/http"
-    "net/http/httptest"
 
-    "golang.org/x/net/context"
-
-    "github.com/iplay88keys/my-recipe-library/pkg/api/auth"
-
+    "github.com/iplay88keys/my-recipe-library/pkg/api"
     "github.com/iplay88keys/my-recipe-library/pkg/api/recipes"
     . "github.com/iplay88keys/my-recipe-library/pkg/helpers"
     "github.com/iplay88keys/my-recipe-library/pkg/repositories"
@@ -36,15 +33,19 @@ var _ = Describe("ListRecipes", func() {
             }}, nil
         }
 
-        req := httptest.NewRequest("GET", "/recipes", nil)
-        req = req.WithContext(context.WithValue(req.Context(), auth.ContextUserKey, int64(2)))
+        req, err := http.NewRequest(http.MethodGet, "/recipes", nil)
+        Expect(err).ToNot(HaveOccurred())
 
-        rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(recipes.ListRecipes(listRecipes).Handler)
+        resp := recipes.ListRecipes(listRecipes).Handle(&api.Request{
+            Req:    req,
+            UserID: 2,
+        })
 
-        handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusOK))
-        Expect(rr.Body.String()).To(MatchJSON(`{
+        Expect(resp.StatusCode).To(Equal(http.StatusOK))
+
+        respBody, err := json.Marshal(resp.Body)
+        Expect(err).ToNot(HaveOccurred())
+        Expect(respBody).To(MatchJSON(`{
             "recipes": [{
                 "id": 1,
                 "name": "First",
@@ -65,14 +66,15 @@ var _ = Describe("ListRecipes", func() {
             return nil, sql.ErrNoRows
         }
 
-        req := httptest.NewRequest("GET", "/recipes", nil)
-        req = req.WithContext(context.WithValue(req.Context(), auth.ContextUserKey, int64(2)))
+        req, err := http.NewRequest(http.MethodGet, "/recipes", nil)
+        Expect(err).ToNot(HaveOccurred())
 
-        rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(recipes.ListRecipes(listRecipes).Handler)
+        resp := recipes.ListRecipes(listRecipes).Handle(&api.Request{
+            Req:    req,
+            UserID: 2,
+        })
 
-        handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusNoContent))
+        Expect(resp.StatusCode).To(Equal(http.StatusNoContent))
     })
 
     It("returns an error if the repository call fails", func() {
@@ -80,27 +82,14 @@ var _ = Describe("ListRecipes", func() {
             return nil, errors.New("some error")
         }
 
-        req := httptest.NewRequest("GET", "/recipes", nil)
-        req = req.WithContext(context.WithValue(req.Context(), auth.ContextUserKey, int64(2)))
+        req, err := http.NewRequest(http.MethodGet, "/recipes", nil)
+        Expect(err).ToNot(HaveOccurred())
 
-        rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(recipes.ListRecipes(listRecipes).Handler)
+        resp := recipes.ListRecipes(listRecipes).Handle(&api.Request{
+            Req:    req,
+            UserID: 2,
+        })
 
-        handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusInternalServerError))
-    })
-
-    It("returns an error if the userID does not exist on the context", func() {
-        listRecipes := func(userID int64) ([]*repositories.Recipe, error) {
-            return nil, nil
-        }
-
-        req := httptest.NewRequest("GET", "/recipes", nil)
-
-        rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(recipes.ListRecipes(listRecipes).Handler)
-
-        handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusInternalServerError))
+        Expect(resp.StatusCode).To(Equal(http.StatusInternalServerError))
     })
 })

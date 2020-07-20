@@ -1,3 +1,10 @@
+import { APIError } from "../users/types";
+
+export interface RecipeCreateResponse {
+    recipe_id: number
+    errors: APIError
+}
+
 export interface RecipeListResponse {
     recipes: RecipeResponse[]
 }
@@ -30,10 +37,23 @@ export interface Step {
     instructions: string
 }
 
+export interface RecipeCreateRequest {
+    name: string
+    description: string
+    servings: number
+    prep_time: string | undefined
+    cook_time: string | undefined
+    cool_time: string | undefined
+    total_time: string | undefined
+    source: string | undefined
+}
+
 export interface RecipeState {
     recipes: RecipeResponse[]
     recipe: RecipeResponse
+    recipe_id: number
     loading: boolean
+    creating: boolean
     error: string
 }
 
@@ -44,4 +64,7 @@ export enum RecipeActionTypes {
     FETCH_RECIPE_REQUEST = "@@recipes/FETCH_RECIPE_REQUEST",
     FETCH_RECIPE_SUCCESS = "@@recipes/FETCH_RECIPE_SUCCESS",
     FETCH_RECIPE_FAILURE = "@@recipes/FETCH_RECIPE_FAILURE",
+    CREATE_RECIPE_REQUEST = "@@recipes/CREATE_RECIPE_REQUEST",
+    CREATE_RECIPE_SUCCESS = "@@recipes/CREATE_RECIPE_SUCCESS",
+    CREATE_RECIPE_FAILURE = "@@recipes/CREATE_RECIPE_FAILURE",
 }

@@ -2,14 +2,11 @@ package recipes_test
 
 import (
     "database/sql"
+    "encoding/json"
     "errors"
     "net/http"
-    "net/http/httptest"
 
-    "github.com/gorilla/mux"
-    "golang.org/x/net/context"
-
-    "github.com/iplay88keys/my-recipe-library/pkg/api/auth"
+    "github.com/iplay88keys/my-recipe-library/pkg/api"
 
     "github.com/iplay88keys/my-recipe-library/pkg/api/recipes"
     . "github.com/iplay88keys/my-recipe-library/pkg/helpers"
@@ -62,16 +59,20 @@ var _ = Describe("GetRecipe", func() {
             }}, nil
         }
 
-        req := httptest.NewRequest("GET", "/recipes/1", nil)
-        req = mux.SetURLVars(req, map[string]string{"id": "1"})
-        req = req.WithContext(context.WithValue(req.Context(), auth.ContextUserKey, int64(2)))
+        req, err := http.NewRequest(http.MethodGet, "/recipes/1", nil)
+        Expect(err).ToNot(HaveOccurred())
 
-        rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(recipes.GetRecipe(getRecipe, getIngredients, getSteps).Handler)
+        resp := recipes.GetRecipe(getRecipe, getIngredients, getSteps).Handle(&api.Request{
+            Req:    req,
+            UserID: 2,
+            Vars:   map[string]string{"id": "1"},
+        })
 
-        handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusOK))
-        Expect(rr.Body.String()).To(MatchJSON(`{
+        Expect(resp.StatusCode).To(Equal(http.StatusOK))
+
+        respBody, err := json.Marshal(resp.Body)
+        Expect(err).ToNot(HaveOccurred())
+        Expect(respBody).To(MatchJSON(`{
             "id": 1,
             "name": "Root Beer Float",
             "description": "Delicious",
@@ -134,16 +135,20 @@ var _ = Describe("GetRecipe", func() {
             return []*repositories.Step{}, nil
         }
 
-        req := httptest.NewRequest("GET", "/recipes/1", nil)
-        req = mux.SetURLVars(req, map[string]string{"id": "1"})
-        req = req.WithContext(context.WithValue(req.Context(), auth.ContextUserKey, int64(2)))
+        req, err := http.NewRequest(http.MethodGet, "/recipes/1", nil)
+        Expect(err).ToNot(HaveOccurred())
 
-        rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(recipes.GetRecipe(getRecipe, getIngredients, getSteps).Handler)
+        resp := recipes.GetRecipe(getRecipe, getIngredients, getSteps).Handle(&api.Request{
+            Req:    req,
+            UserID: 2,
+            Vars:   map[string]string{"id": "1"},
+        })
 
-        handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusOK))
-        Expect(rr.Body.String()).To(MatchJSON(`{
+        Expect(resp.StatusCode).To(Equal(http.StatusOK))
+
+        respBody, err := json.Marshal(resp.Body)
+        Expect(err).ToNot(HaveOccurred())
+        Expect(respBody).To(MatchJSON(`{
             "id": 1,
             "name": "Root Beer Float",
             "description": "Delicious",
@@ -187,16 +192,20 @@ var _ = Describe("GetRecipe", func() {
             }}, nil
         }
 
-        req := httptest.NewRequest("GET", "/recipes/1", nil)
-        req = mux.SetURLVars(req, map[string]string{"id": "1"})
-        req = req.WithContext(context.WithValue(req.Context(), auth.ContextUserKey, int64(2)))
+        req, err := http.NewRequest(http.MethodGet, "/recipes/1", nil)
+        Expect(err).ToNot(HaveOccurred())
 
-        rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(recipes.GetRecipe(getRecipe, getIngredients, getSteps).Handler)
+        resp := recipes.GetRecipe(getRecipe, getIngredients, getSteps).Handle(&api.Request{
+            Req:    req,
+            UserID: 2,
+            Vars:   map[string]string{"id": "1"},
+        })
 
-        handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusOK))
-        Expect(rr.Body.String()).To(MatchJSON(`{
+        Expect(resp.StatusCode).To(Equal(http.StatusOK))
+
+        respBody, err := json.Marshal(resp.Body)
+        Expect(err).ToNot(HaveOccurred())
+        Expect(respBody).To(MatchJSON(`{
             "id": 1,
             "name": "Root Beer Float",
             "description": "Delicious",
@@ -209,29 +218,6 @@ var _ = Describe("GetRecipe", func() {
                 "instructions": "Top with Root Beer."
             }]
         }`))
-    })
-
-    It("returns an error if the userID does not exist on the context", func() {
-        getRecipe := func(recipeID, userID int64) (*repositories.Recipe, error) {
-            return nil, sql.ErrNoRows
-        }
-
-        getIngredients := func(recipeID int64) ([]*repositories.Ingredient, error) {
-            return []*repositories.Ingredient{}, nil
-        }
-
-        getSteps := func(recipeID int64) ([]*repositories.Step, error) {
-            return []*repositories.Step{}, nil
-        }
-
-        req := httptest.NewRequest("GET", "/recipes/1", nil)
-        req = mux.SetURLVars(req, map[string]string{"id": "1"})
-
-        rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(recipes.GetRecipe(getRecipe, getIngredients, getSteps).Handler)
-
-        handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusInternalServerError))
     })
 
     It("returns an error if the recipe repository returns no rows", func() {
@@ -247,15 +233,16 @@ var _ = Describe("GetRecipe", func() {
             return []*repositories.Step{}, nil
         }
 
-        req := httptest.NewRequest("GET", "/recipes/1", nil)
-        req = mux.SetURLVars(req, map[string]string{"id": "1"})
-        req = req.WithContext(context.WithValue(req.Context(), auth.ContextUserKey, int64(2)))
+        req, err := http.NewRequest(http.MethodGet, "/recipes/1", nil)
+        Expect(err).ToNot(HaveOccurred())
 
-        rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(recipes.GetRecipe(getRecipe, getIngredients, getSteps).Handler)
+        resp := recipes.GetRecipe(getRecipe, getIngredients, getSteps).Handle(&api.Request{
+            Req:    req,
+            UserID: 2,
+            Vars:   map[string]string{"id": "1"},
+        })
 
-        handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusNotFound))
+        Expect(resp.StatusCode).To(Equal(http.StatusNotFound))
     })
 
     It("returns an error if the recipe repository call fails", func() {
@@ -271,15 +258,16 @@ var _ = Describe("GetRecipe", func() {
             return []*repositories.Step{}, nil
         }
 
-        req := httptest.NewRequest("GET", "/recipes/1", nil)
-        req = mux.SetURLVars(req, map[string]string{"id": "1"})
-        req = req.WithContext(context.WithValue(req.Context(), auth.ContextUserKey, int64(2)))
+        req, err := http.NewRequest(http.MethodGet, "/recipes/1", nil)
+        Expect(err).ToNot(HaveOccurred())
 
-        rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(recipes.GetRecipe(getRecipe, getIngredients, getSteps).Handler)
+        resp := recipes.GetRecipe(getRecipe, getIngredients, getSteps).Handle(&api.Request{
+            Req:    req,
+            UserID: 2,
+            Vars:   map[string]string{"id": "1"},
+        })
 
-        handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusInternalServerError))
+        Expect(resp.StatusCode).To(Equal(http.StatusInternalServerError))
     })
 
     It("returns an error if the ingredients repository call fails", func() {
@@ -295,15 +283,16 @@ var _ = Describe("GetRecipe", func() {
             return []*repositories.Step{}, nil
         }
 
-        req := httptest.NewRequest("GET", "/recipes/1", nil)
-        req = mux.SetURLVars(req, map[string]string{"id": "1"})
-        req = req.WithContext(context.WithValue(req.Context(), auth.ContextUserKey, int64(2)))
+        req, err := http.NewRequest(http.MethodGet, "/recipes/1", nil)
+        Expect(err).ToNot(HaveOccurred())
 
-        rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(recipes.GetRecipe(getRecipe, getIngredients, getSteps).Handler)
+        resp := recipes.GetRecipe(getRecipe, getIngredients, getSteps).Handle(&api.Request{
+            Req:    req,
+            UserID: 2,
+            Vars:   map[string]string{"id": "1"},
+        })
 
-        handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusInternalServerError))
+        Expect(resp.StatusCode).To(Equal(http.StatusInternalServerError))
     })
 
     It("returns an error if the steps repository call fails", func() {
@@ -319,15 +308,16 @@ var _ = Describe("GetRecipe", func() {
             return nil, errors.New("some error")
         }
 
-        req := httptest.NewRequest("GET", "/recipes/1", nil)
-        req = mux.SetURLVars(req, map[string]string{"id": "1"})
-        req = req.WithContext(context.WithValue(req.Context(), auth.ContextUserKey, int64(2)))
+        req, err := http.NewRequest(http.MethodGet, "/recipes/1", nil)
+        Expect(err).ToNot(HaveOccurred())
 
-        rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(recipes.GetRecipe(getRecipe, getIngredients, getSteps).Handler)
+        resp := recipes.GetRecipe(getRecipe, getIngredients, getSteps).Handle(&api.Request{
+            Req:    req,
+            UserID: 2,
+            Vars:   map[string]string{"id": "1"},
+        })
 
-        handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusInternalServerError))
+        Expect(resp.StatusCode).To(Equal(http.StatusInternalServerError))
     })
 
     It("returns an error if the provided route variable is not a number", func() {
@@ -343,14 +333,15 @@ var _ = Describe("GetRecipe", func() {
             return []*repositories.Step{}, nil
         }
 
-        req := httptest.NewRequest("GET", "/recipes/not-a-number", nil)
-        req = mux.SetURLVars(req, map[string]string{"id": "not-a-number"})
-        req = req.WithContext(context.WithValue(req.Context(), auth.ContextUserKey, int64(2)))
+        req, err := http.NewRequest(http.MethodGet, "/recipes/not-a-number", nil)
+        Expect(err).ToNot(HaveOccurred())
 
-        rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(recipes.GetRecipe(getRecipe, getIngredients, getSteps).Handler)
+        resp := recipes.GetRecipe(getRecipe, getIngredients, getSteps).Handle(&api.Request{
+            Req:    req,
+            UserID: 2,
+            Vars:   map[string]string{"id": "not-a-number"},
+        })
 
-        handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusInternalServerError))
+        Expect(resp.StatusCode).To(Equal(http.StatusInternalServerError))
     })
 })

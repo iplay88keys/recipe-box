@@ -83,7 +83,7 @@ interface RecipeProps {
     loading: boolean
 }
 
-export const SingleRecipe = ({recipe, loading}: RecipeProps) => {
+export const Recipe = ({recipe, loading}: RecipeProps) => {
     if (loading) {
         return (
             <div>

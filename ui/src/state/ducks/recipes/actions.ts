@@ -1,5 +1,7 @@
+import { FormikErrors } from "formik";
 import { createAsyncAction } from "typesafe-actions";
-import { RecipeResponse, RecipeListResponse, RecipeActionTypes } from "./types";
+import { NewRecipeFormValues } from "../../../views/components/NewRecipe";
+import { RecipeActionTypes, RecipeCreateRequest, RecipeListResponse, RecipeResponse } from "./types";
 
 export const fetchRecipesAsync = createAsyncAction(
     RecipeActionTypes.FETCH_RECIPES_REQUEST,
@@ -12,3 +14,9 @@ export const fetchRecipeAsync = createAsyncAction(
     RecipeActionTypes.FETCH_RECIPE_SUCCESS,
     RecipeActionTypes.FETCH_RECIPE_FAILURE
 )<number, RecipeResponse, Error>();
+
+export const createRecipeAsync = createAsyncAction(
+    RecipeActionTypes.CREATE_RECIPE_REQUEST,
+    RecipeActionTypes.CREATE_RECIPE_SUCCESS,
+    RecipeActionTypes.CREATE_RECIPE_FAILURE
+)<[RecipeCreateRequest, (errors: FormikErrors<NewRecipeFormValues>) => void], number, Error>();

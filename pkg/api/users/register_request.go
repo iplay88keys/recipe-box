@@ -8,13 +8,13 @@ import (
     "unicode"
 )
 
-type UserSignupRequest struct {
+type RegisterRequest struct {
     Username string `json:"username"`
     Email    string `json:"email"`
     Password string `json:"password"`
 }
 
-func (u *UserSignupRequest) Validate(usernameExists, emailExists bool) map[string]string {
+func (u *RegisterRequest) Validate(usernameExists, emailExists bool) map[string]string {
     errors := make(map[string]string)
 
     var usernameErrors []string
@@ -61,7 +61,7 @@ func (u *UserSignupRequest) Validate(usernameExists, emailExists bool) map[strin
     return errors
 }
 
-func (u *UserSignupRequest) validateUsername() []string {
+func (u *RegisterRequest) validateUsername() []string {
     var errors []string
 
     const minLength = 6
@@ -95,7 +95,7 @@ func (u *UserSignupRequest) validateUsername() []string {
     return errors
 }
 
-func (u *UserSignupRequest) validatePassword() []string {
+func (u *RegisterRequest) validatePassword() []string {
     var errors []string
 
     var uppercasePresent, lowercasePresent, numberPresent, specialCharPresent bool

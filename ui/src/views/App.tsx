@@ -10,9 +10,10 @@ import { LoggedInRedirect } from "./components/LoggedInRedirect";
 import { Navigation } from "./components/Navigation";
 import { PrivateRoute } from "./components/PrivateRoute";
 import Login from "./pages/LoginPage";
-import Recipe from "./pages/RecipePage";
-import Recipes from "./pages/RecipesPage";
-import Register from "./pages/RegisterPage";
+import NewRecipePage from "./pages/NewRecipePage";
+import RecipePage from "./pages/RecipePage";
+import RecipesPage from "./pages/RecipesPage";
+import RegisterPage from "./pages/RegisterPage";
 
 const StyledApp = styled.div`
   height: 100%;
@@ -54,11 +55,12 @@ class App extends React.Component<AllProps, State> {
                         <Navigation loggedIn={this.props.loggedIn}/>
                         <StyledApp>
                             <Switch>
-                                <Route exact path="/" component={Recipes}/>
-                                <LoggedInRedirect exact path="/register" component={Register}/>
+                                <Route exact path="/" component={RecipesPage}/>
+                                <LoggedInRedirect exact path="/register" component={RegisterPage}/>
                                 <Route exact path="/login" component={Login}/>
-                                <PrivateRoute exact path="/recipes" component={Recipes}/>
-                                <PrivateRoute exact path="/recipes/:recipeID" component={Recipe}/>
+                                <PrivateRoute exact path="/recipes/new" component={NewRecipePage}/>
+                                <PrivateRoute exact path="/recipes" component={RecipesPage}/>
+                                <PrivateRoute exact path="/recipes/:recipeID" component={RecipePage}/>
                                 <Redirect from="*" to="/"/>
                             </Switch>
                         </StyledApp>

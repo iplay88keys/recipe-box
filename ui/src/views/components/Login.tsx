@@ -78,7 +78,6 @@ export const LoginFormInner = (props: FormikProps<LoginFormValues>) => {
                 </Typography>
                 <form onSubmit={handleSubmit} className={classes.form}>
                     <TextField
-                        type="login"
                         placeholder="Username or Email Address"
                         variant="outlined"
                         label="Username/Email Address"

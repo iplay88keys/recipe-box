@@ -1,12 +1,8 @@
-import {
-    fetchRecipeAsync,
-    fetchRecipesAsync
-
-} from "./actions";
-import { Ingredient, RecipeResponse, RecipeActionTypes, Step } from "./types";
+import { createRecipeAsync, fetchRecipeAsync, fetchRecipesAsync } from "./actions";
+import { Ingredient, RecipeActionTypes, RecipeCreateResponse, RecipeResponse, Step } from "./types";
 
 describe("actions", () => {
-    describe("recipes", () => {
+    describe("list", () => {
         it("should create an action to request recipes", () => {
             const expectedAction = {
                 type: RecipeActionTypes.FETCH_RECIPES_REQUEST
@@ -43,7 +39,7 @@ describe("actions", () => {
         });
     });
 
-    describe("recipe", () => {
+    describe("get", () => {
         it("should create an action to request a recipe", () => {
             const expectedAction = {
                 type: RecipeActionTypes.FETCH_RECIPE_REQUEST,
@@ -87,6 +83,36 @@ describe("actions", () => {
                 payload: err
             };
             expect(fetchRecipeAsync.failure(err)).toEqual(expectedAction);
+        });
+    });
+
+    describe("create", () => {
+        it("should create an action to create a recipe", () => {
+            const expectedAction = {
+                type: RecipeActionTypes.CREATE_RECIPE_REQUEST
+            };
+            expect(createRecipeAsync.request()).toEqual(expectedAction);
+        });
+
+        it("should create a successful action to create a recipe", () => {
+            const recipes = {
+                recipe_id: 1
+            } as RecipeCreateResponse;
+
+            const expectedAction = {
+                type: RecipeActionTypes.CREATE_RECIPE_SUCCESS,
+                payload: recipes
+            };
+            expect(createRecipeAsync.success(recipes)).toEqual(expectedAction);
+        });
+
+        it("should create an error action to create a recipe", () => {
+            const err = Error("some error");
+            const expectedAction = {
+                type: RecipeActionTypes.CREATE_RECIPE_FAILURE,
+                payload: err
+            };
+            expect(createRecipeAsync.failure(err)).toEqual(expectedAction);
         });
     });
 });

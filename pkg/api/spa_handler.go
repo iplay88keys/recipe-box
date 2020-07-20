@@ -1,6 +1,7 @@
 package api
 
 import (
+    "fmt"
     "net/http"
     "os"
     "path/filepath"
@@ -15,6 +16,7 @@ type spaHandler struct {
 func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     path, err := filepath.Abs(r.URL.Path)
     if err != nil {
+        fmt.Printf("Spa file not found for '%s': %s\n", r.URL.Path, err.Error())
         http.Error(w, err.Error(), http.StatusBadRequest)
         return
     }
@@ -26,6 +28,7 @@ func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
         http.ServeFile(w, r, filepath.Join(h.staticPath, h.indexPath))
         return
     } else if err != nil {
+        fmt.Printf("Spa Handle error: %s\n", err.Error())
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }

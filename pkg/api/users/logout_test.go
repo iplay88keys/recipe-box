@@ -3,7 +3,8 @@ package users_test
 import (
     "errors"
     "net/http"
-    "net/http/httptest"
+
+    "github.com/iplay88keys/my-recipe-library/pkg/api"
 
     "github.com/iplay88keys/my-recipe-library/pkg/token"
 
@@ -25,12 +26,14 @@ var _ = Describe("logout", func() {
             return 1, nil
         }
 
-        req := httptest.NewRequest("POST", "/users/logout", nil)
-        rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(users.Logout(validateToken, deleteTokenDetails).Handler)
+        req, err := http.NewRequest(http.MethodPost, "/users/logout", nil)
+        Expect(err).ToNot(HaveOccurred())
 
-        handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusOK))
+        resp := users.Logout(validateToken, deleteTokenDetails).Handle(&api.Request{
+            Req: req,
+        })
+
+        Expect(resp.StatusCode).To(Equal(http.StatusOK))
     })
 
     It("returns unauthorized if the token cannot be validated", func() {
@@ -42,12 +45,14 @@ var _ = Describe("logout", func() {
             return 1, nil
         }
 
-        req := httptest.NewRequest("POST", "/users/logout", nil)
-        rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(users.Logout(validateToken, deleteTokenDetails).Handler)
+        req, err := http.NewRequest(http.MethodPost, "/users/logout", nil)
+        Expect(err).ToNot(HaveOccurred())
 
-        handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusUnauthorized))
+        resp := users.Logout(validateToken, deleteTokenDetails).Handle(&api.Request{
+            Req: req,
+        })
+
+        Expect(resp.StatusCode).To(Equal(http.StatusUnauthorized))
     })
 
     It("returns unauthorized if the token deletion returns 0", func() {
@@ -61,12 +66,14 @@ var _ = Describe("logout", func() {
             return 0, nil
         }
 
-        req := httptest.NewRequest("POST", "/users/logout", nil)
-        rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(users.Logout(validateToken, deleteTokenDetails).Handler)
+        req, err := http.NewRequest(http.MethodPost, "/users/logout", nil)
+        Expect(err).ToNot(HaveOccurred())
 
-        handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusUnauthorized))
+        resp := users.Logout(validateToken, deleteTokenDetails).Handle(&api.Request{
+            Req: req,
+        })
+
+        Expect(resp.StatusCode).To(Equal(http.StatusUnauthorized))
     })
 
     It("returns unauthorized if the token cannot be deleted", func() {
@@ -80,11 +87,13 @@ var _ = Describe("logout", func() {
             return 1, errors.New("token deletion failed")
         }
 
-        req := httptest.NewRequest("POST", "/users/logout", nil)
-        rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(users.Logout(validateToken, deleteTokenDetails).Handler)
+        req, err := http.NewRequest(http.MethodPost, "/users/logout", nil)
+        Expect(err).ToNot(HaveOccurred())
 
-        handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusUnauthorized))
+        resp := users.Logout(validateToken, deleteTokenDetails).Handle(&api.Request{
+            Req: req,
+        })
+
+        Expect(resp.StatusCode).To(Equal(http.StatusUnauthorized))
     })
 })

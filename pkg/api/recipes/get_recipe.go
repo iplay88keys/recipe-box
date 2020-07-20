@@ -2,14 +2,10 @@ package recipes
 
 import (
     "database/sql"
-    "encoding/json"
     "fmt"
     "net/http"
     "sort"
     "strconv"
-
-    "github.com/gorilla/mux"
-    "github.com/iplay88keys/my-recipe-library/pkg/api/auth"
 
     "github.com/iplay88keys/my-recipe-library/pkg/api"
     "github.com/iplay88keys/my-recipe-library/pkg/repositories"
@@ -37,69 +33,50 @@ type getRecipe func(recipeID, userID int64) (*repositories.Recipe, error)
 type getIngredientsForRecipe func(recipeID int64) ([]*repositories.Ingredient, error)
 type getStepsForRecipe func(recipeID int64) ([]*repositories.Step, error)
 
-func GetRecipe(getRecipe getRecipe, getIngredientsForRecipe getIngredientsForRecipe, getStepsForRecipe getStepsForRecipe) api.Endpoint {
-    return api.Endpoint{
+func GetRecipe(getRecipe getRecipe, getIngredientsForRecipe getIngredientsForRecipe, getStepsForRecipe getStepsForRecipe) *api.Endpoint {
+    return &api.Endpoint{
         Path:   "recipes/{id:[0-9]+}",
         Method: http.MethodGet,
         Auth:   true,
-        Handler: func(w http.ResponseWriter, r *http.Request) {
-            id := r.Context().Value(auth.ContextUserKey)
-            userID, ok := id.(int64)
-            if !ok {
-                fmt.Printf("Failed to cast userID to int64 for get recipe endpoint: '%s'\n", id)
-                w.WriteHeader(http.StatusInternalServerError)
-                return
-            }
-
-            vars := mux.Vars(r)
-            recipeID, err := strconv.ParseInt(vars["id"], 10, 64)
+        Handle: func(r *api.Request) *api.Response {
+            recipeID, err := strconv.ParseInt(r.Vars["id"], 10, 64)
             if err != nil {
-                fmt.Printf("Recipe endpoint missing id: %s\n", err.Error())
-                w.WriteHeader(http.StatusInternalServerError)
-                return
+                fmt.Printf("RecipeResponse endpoint missing id: %s\n", err.Error())
+                return api.NewResponse(http.StatusInternalServerError, nil)
             }
 
-            recipe, err := getRecipe(recipeID, userID)
+            recipe, err := getRecipe(recipeID, r.UserID)
             if err != nil {
                 if err == sql.ErrNoRows {
-                    w.WriteHeader(http.StatusNotFound)
-                    return
+                    return api.NewResponse(http.StatusNotFound, nil)
                 }
 
-                fmt.Printf("FormError getting recipe: %s\n", err.Error())
-                w.WriteHeader(http.StatusInternalServerError)
-                return
+                fmt.Printf("Error getting recipe: %s\n", err.Error())
+                return api.NewResponse(http.StatusInternalServerError, nil)
             }
 
             recipeIngredients, err := getIngredientsForRecipe(recipeID)
             if err != nil {
-                fmt.Printf("FormError getting ingredients for recipe: %s\n", err.Error())
-                w.WriteHeader(http.StatusInternalServerError)
-                return
+                fmt.Printf("Error getting ingredients for recipe: %s\n", err.Error())
+                return api.NewResponse(http.StatusInternalServerError, nil)
             }
 
             recipeSteps, err := getStepsForRecipe(recipeID)
             if err != nil {
-                fmt.Printf("FormError getting steps for recipe: %s\n", err.Error())
-                w.WriteHeader(http.StatusInternalServerError)
-                return
+                fmt.Printf("Error getting steps for recipe: %s\n", err.Error())
+                return api.NewResponse(http.StatusInternalServerError, nil)
             }
 
             sort.Sort(ByIngredientNumber(recipeIngredients))
             sort.Sort(ByStepNumber(recipeSteps))
 
-            recipeBytes, err := json.Marshal(&RecipeResponse{
+            resp := &RecipeResponse{
                 Recipe:      *recipe,
                 Ingredients: recipeIngredients,
                 Steps:       recipeSteps,
-            })
-            if err != nil {
-                fmt.Printf("FormError marshaling recipe: %s\n", err.Error())
-                w.WriteHeader(http.StatusInternalServerError)
-                return
             }
 
-            api.LogWriteErr(w.Write(recipeBytes))
+            return api.NewResponse(http.StatusOK, resp)
         },
     }
 }

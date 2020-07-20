@@ -35,7 +35,7 @@ export function* loginSaga(action: ReturnType<typeof loginAsync.request>): Gener
             action.meta(err.response.data.errors);
         }
 
-        yield put(registerAsync.failure(err));
+        yield put(loginAsync.failure(err));
     }
 }
 

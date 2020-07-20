@@ -9,10 +9,6 @@ import (
 
     "github.com/iplay88keys/my-recipe-library/pkg/token"
 
-    "github.com/iplay88keys/my-recipe-library/pkg/api/auth/authfakes"
-
-    "github.com/iplay88keys/my-recipe-library/pkg/api/auth"
-
     "github.com/iplay88keys/my-recipe-library/pkg/api"
     "github.com/iplay88keys/my-recipe-library/pkg/helpers"
 
@@ -32,10 +28,7 @@ var _ = Describe("API", func() {
         port, err = helpers.GetRandomPort()
         Expect(err).ToNot(HaveOccurred())
 
-        tokenService := &authfakes.FakeTokenService{}
-        redisRepo := &authfakes.FakeRedisRepo{}
-
-        tokenService.ValidateTokenStub = func(r *http.Request) (*token.AccessDetails, error) {
+        validateToken := func(r *http.Request) (*token.AccessDetails, error) {
             if r.Header.Get("Authorization") == "bearer token" {
                 return &token.AccessDetails{
                     AccessUuid: "some-uuid",
@@ -45,28 +38,28 @@ var _ = Describe("API", func() {
                 return nil, errors.New("auth error")
             }
         }
-        redisRepo.RetrieveTokenDetailsStub = func(details *token.AccessDetails) (int64, error) {
+
+        retrieveTokenDetails := func(details *token.AccessDetails) (int64, error) {
             return 10, nil
         }
 
-        authMiddleware := auth.NewMiddleware(tokenService, redisRepo)
-
         server = api.New(&api.Config{
-            Port:           port,
-            StaticDir:      "fixtures",
-            AuthMiddleware: authMiddleware,
-            Endpoints: []api.Endpoint{{
+            Port:                  port,
+            StaticDir:             "fixtures",
+            Validate:              validateToken,
+            RetrieveAccessDetails: retrieveTokenDetails,
+            Endpoints: []*api.Endpoint{{
                 Path:   "test-unauthenticated-endpoint",
                 Method: http.MethodGet,
-                Handler: func(w http.ResponseWriter, r *http.Request) {
-                    w.Write([]byte("Exists"))
+                Handle: func(r *api.Request) *api.Response {
+                    return api.NewResponse(http.StatusOK, nil)
                 },
             }, {
                 Path:   "test-authenticated-endpoint",
                 Method: http.MethodGet,
                 Auth:   true,
-                Handler: func(w http.ResponseWriter, r *http.Request) {
-                    w.Write([]byte("Authenticated"))
+                Handle: func(r *api.Request) *api.Response {
+                    return api.NewResponse(http.StatusOK, nil)
                 },
             }},
         })
@@ -105,10 +98,6 @@ var _ = Describe("API", func() {
         resp, err := client.Do(req)
         Expect(err).ToNot(HaveOccurred())
         Expect(resp.StatusCode).To(Equal(http.StatusOK))
-
-        body, err := ioutil.ReadAll(resp.Body)
-        Expect(err).ToNot(HaveOccurred())
-        Expect(string(body)).To(ContainSubstring("Exists"))
     })
 
     It("serves authenticated api pages if the user is authenticated", func() {
@@ -122,16 +111,11 @@ var _ = Describe("API", func() {
         req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://localhost:%s/api/v1/test-authenticated-endpoint", port), nil)
         Expect(err).ToNot(HaveOccurred())
 
-        req.Header.Set("Content-Type", "application/json")
         req.Header.Set("Authorization", "bearer token")
 
         resp, err := client.Do(req)
         Expect(err).ToNot(HaveOccurred())
         Expect(resp.StatusCode).To(Equal(http.StatusOK))
-
-        body, err := ioutil.ReadAll(resp.Body)
-        Expect(err).ToNot(HaveOccurred())
-        Expect(string(body)).To(ContainSubstring("Authenticated"))
     })
 
     It("serves the static files directly", func() {
@@ -162,16 +146,11 @@ var _ = Describe("API", func() {
         req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://localhost:%s/api/v1/non-existent", port), nil)
         Expect(err).ToNot(HaveOccurred())
 
-        req.Header.Set("Content-Type", "application/json")
         req.Header.Set("Authorization", "bearer token")
 
         resp, err := client.Do(req)
         Expect(err).ToNot(HaveOccurred())
         Expect(resp.StatusCode).To(Equal(http.StatusNotFound))
-
-        body, err := ioutil.ReadAll(resp.Body)
-        Expect(err).ToNot(HaveOccurred())
-        Expect(string(body)).To(Equal("page not found"))
     })
 
     It("returns unauthorized if the user is not authenticated for an endpoint that requires auth", func() {
@@ -184,8 +163,6 @@ var _ = Describe("API", func() {
 
         req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://localhost:%s/api/v1/test-authenticated-endpoint", port), nil)
         Expect(err).ToNot(HaveOccurred())
-
-        req.Header.Set("Content-Type", "application/json")
 
         resp, err := client.Do(req)
         Expect(err).ToNot(HaveOccurred())

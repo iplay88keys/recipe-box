@@ -1,7 +1,7 @@
 import { Reducer } from "redux";
 import { ActionType, getType } from "typesafe-actions";
 import * as recipe from "./actions";
-import { fetchRecipeAsync, fetchRecipesAsync } from "./actions";
+import { createRecipeAsync, fetchRecipeAsync, fetchRecipesAsync } from "./actions";
 import { RecipeResponse, RecipeState } from "./types";
 
 export type RecipeAction = ActionType<typeof recipe>;
@@ -9,7 +9,9 @@ export type RecipeAction = ActionType<typeof recipe>;
 const initialState: RecipeState = {
     recipes: [],
     recipe: {} as RecipeResponse,
-    loading: true,
+    recipe_id: 0,
+    loading: false,
+    creating: false,
     error: ""
 };
 
@@ -49,8 +51,26 @@ const reducer: Reducer<RecipeState, RecipeAction> = (state = initialState, actio
                 loading: false,
                 error: action.payload.message
             };
+
+        case getType(createRecipeAsync.request):
+            return {
+                ...state,
+                creating: true
+            };
+        case getType(createRecipeAsync.success):
+            return {
+                ...state,
+                creating: false,
+                recipe_id: action.payload
+            };
+        case getType(createRecipeAsync.failure):
+            return {
+                ...state,
+                creating: false,
+                error: action.payload.message
+            };
         default:
-            return state
+            return state;
     }
 };
 

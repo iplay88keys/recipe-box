@@ -2,11 +2,11 @@ import React from "react";
 import Enzyme, { shallow } from "enzyme";
 import Adapter from "enzyme-adapter-react-16";
 import { Ingredient, RecipeResponse, Step } from "../../state/ducks/recipes/types";
-import { SingleRecipe } from "./SingleRecipe";
+import { Recipe } from "./Recipe";
 
 Enzyme.configure({adapter: new Adapter()});
 
-describe("SingleRecipe", () => {
+describe("Recipe", () => {
     it("should render a single recipe", () => {
         const recipe = {
             id: 0,
@@ -39,7 +39,7 @@ describe("SingleRecipe", () => {
         } as RecipeResponse;
 
         const enzymeWrapper = shallow(
-            <SingleRecipe
+            <Recipe
                 recipe={recipe}
                 loading={false}
             />
@@ -87,7 +87,7 @@ describe("SingleRecipe", () => {
         } as RecipeResponse;
 
         const enzymeWrapper = shallow(
-            <SingleRecipe
+            <Recipe
                 recipe={recipe}
                 loading={false}
             />
@@ -117,7 +117,7 @@ describe("SingleRecipe", () => {
         } as RecipeResponse;
 
         const enzymeWrapper = shallow(
-            <SingleRecipe
+            <Recipe
                 recipe={recipe}
                 loading={false}
             />
@@ -139,7 +139,7 @@ describe("SingleRecipe", () => {
         } as RecipeResponse;
 
         const enzymeWrapper = shallow(
-            <SingleRecipe
+            <Recipe
                 recipe={recipe}
                 loading={false}
             />
@@ -161,7 +161,7 @@ describe("SingleRecipe", () => {
         };
 
         const enzymeWrapper = shallow(
-            <SingleRecipe
+            <Recipe
                 recipe={props.recipe}
                 loading={true}
             />

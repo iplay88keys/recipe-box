@@ -93,7 +93,7 @@ func (u *UsersRepository) Insert(username, email, password string) (int64, error
 
     id, err := res.LastInsertId()
     if err != nil {
-        fmt.Printf("Recipe was not saved correctly: %s\n", err.Error())
+        fmt.Printf("RecipeResponse was not saved correctly: %s\n", err.Error())
         return 0, errors.New("user was not saved correctly")
     }
 

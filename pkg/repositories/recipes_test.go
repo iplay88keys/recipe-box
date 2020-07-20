@@ -13,7 +13,7 @@ import (
     . "github.com/onsi/gomega"
 )
 
-var _ = Describe("Recipe Repository", func() {
+var _ = Describe("RecipeResponse Repository", func() {
     var (
         db   *sql.DB
         mock sqlmock.Sqlmock
@@ -28,8 +28,8 @@ var _ = Describe("Recipe Repository", func() {
     Describe("List", func() {
         It("returns the list of all recipes", func() {
             rows := sqlmock.NewRows([]string{"id", "name", "description"}).
-                AddRow(0, "First Recipe", "The First").
-                AddRow(1, "Second Recipe", "The Second")
+                AddRow(0, "First RecipeResponse", "The First").
+                AddRow(1, "Second RecipeResponse", "The Second")
 
             mock.ExpectQuery("^SELECT .+ FROM recipes WHERE .+=?$").
                 WithArgs(10).
@@ -41,11 +41,11 @@ var _ = Describe("Recipe Repository", func() {
 
             Expect(recipes).To(Equal([]*repositories.Recipe{{
                 ID:          Int64Pointer(0),
-                Name:        StringPointer("First Recipe"),
+                Name:        StringPointer("First RecipeResponse"),
                 Description: StringPointer("The First"),
             }, {
                 ID:          Int64Pointer(1),
-                Name:        StringPointer("Second Recipe"),
+                Name:        StringPointer("Second RecipeResponse"),
                 Description: StringPointer("The Second"),
             }}))
 
@@ -79,7 +79,7 @@ var _ = Describe("Recipe Repository", func() {
 
         It("returns an error if the rows cannot all be scanned", func() {
             rows := sqlmock.NewRows([]string{"id", "name", "description"}).
-                AddRow(0, "First Recipe", "The First").
+                AddRow(0, "First RecipeResponse", "The First").
                 RowError(0, errors.New("some error"))
 
             mock.ExpectQuery("^SELECT .+ FROM recipes WHERE .+=?$").
@@ -108,8 +108,8 @@ var _ = Describe("Recipe Repository", func() {
                 "source",
             }).AddRow(
                 1,
-                "Recipe Name",
-                "Recipe Description",
+                "RecipeResponse Name",
+                "RecipeResponse Description",
                 "Some Creator",
                 3,
                 "10 m",
@@ -129,8 +129,8 @@ var _ = Describe("Recipe Repository", func() {
 
             Expect(recipe).To(Equal(&repositories.Recipe{
                 ID:          Int64Pointer(1),
-                Name:        StringPointer("Recipe Name"),
-                Description: StringPointer("Recipe Description"),
+                Name:        StringPointer("RecipeResponse Name"),
+                Description: StringPointer("RecipeResponse Description"),
                 Creator:     StringPointer("Some Creator"),
                 Servings:    IntPointer(3),
                 PrepTime:    StringPointer("10 m"),
@@ -176,8 +176,8 @@ var _ = Describe("Recipe Repository", func() {
             mock.ExpectExec("^INSERT INTO recipes").
                 WithArgs(
                     1,
-                    "Recipe Name",
-                    "Recipe Description",
+                    "RecipeResponse Name",
+                    "RecipeResponse Description",
                     3,
                     "1 hr",
                     "2 m",
@@ -188,8 +188,8 @@ var _ = Describe("Recipe Repository", func() {
 
             repo := repositories.NewRecipesRepository(db)
             id, err := repo.Insert(&repositories.Recipe{
-                Name:        StringPointer("Recipe Name"),
-                Description: StringPointer("Recipe Description"),
+                Name:        StringPointer("RecipeResponse Name"),
+                Description: StringPointer("RecipeResponse Description"),
                 Servings:    IntPointer(3),
                 PrepTime:    StringPointer("1 hr"),
                 CookTime:    StringPointer("2 m"),
@@ -210,8 +210,8 @@ var _ = Describe("Recipe Repository", func() {
             mock.ExpectExec("^INSERT INTO recipes").
                 WithArgs(
                     1,
-                    "Recipe Name",
-                    "Recipe Description",
+                    "RecipeResponse Name",
+                    "RecipeResponse Description",
                     3,
                     nil,
                     nil,
@@ -222,8 +222,8 @@ var _ = Describe("Recipe Repository", func() {
 
             repo := repositories.NewRecipesRepository(db)
             id, err := repo.Insert(&repositories.Recipe{
-                Name:        StringPointer("Recipe Name"),
-                Description: StringPointer("Recipe Description"),
+                Name:        StringPointer("RecipeResponse Name"),
+                Description: StringPointer("RecipeResponse Description"),
                 Servings:    IntPointer(3),
             }, 1)
             Expect(err).ToNot(HaveOccurred())

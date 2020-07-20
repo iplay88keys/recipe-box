@@ -8,17 +8,15 @@ import (
     "strconv"
     "strings"
     "syscall"
+    "time"
 
     "github.com/go-redis/redis"
-
-    "github.com/iplay88keys/my-recipe-library/pkg/api/auth"
-
-    "github.com/iplay88keys/my-recipe-library/pkg/token"
 
     "github.com/iplay88keys/my-recipe-library/pkg/api"
     "github.com/iplay88keys/my-recipe-library/pkg/api/recipes"
     "github.com/iplay88keys/my-recipe-library/pkg/api/users"
     "github.com/iplay88keys/my-recipe-library/pkg/repositories"
+    "github.com/iplay88keys/my-recipe-library/pkg/token"
 
     _ "github.com/go-sql-driver/mysql"
 )
@@ -80,13 +78,13 @@ func main() {
     redisRepo := repositories.NewRedisRepository(redisClient)
     tokenService := token.NewService(accessSecret, refreshSecret)
 
-    userVerificationMiddleware := auth.NewMiddleware(tokenService, redisRepo)
-
     a := api.New(&api.Config{
-        Port:           port,
-        StaticDir:      static,
-        AuthMiddleware: userVerificationMiddleware,
-        Endpoints: []api.Endpoint{
+        Port:                  port,
+        StaticDir:             static,
+        Validate:              tokenService.ValidateToken,
+        RetrieveAccessDetails: redisRepo.RetrieveTokenDetails,
+        Endpoints: []*api.Endpoint{
+            recipes.CreateRecipe(recipesRepo.Insert),
             recipes.ListRecipes(recipesRepo.List),
             recipes.GetRecipe(
                 recipesRepo.Get,
@@ -115,6 +113,8 @@ func main() {
     stopApi := a.Start()
 
     defer stopApi()
+    defer disconnectFromMySQL(db)
+    defer disconnectFromRedis(redisClient)
 
     blockUntilSigterm()
 }
@@ -152,6 +152,37 @@ func connectToRedis(redisURL string) (redis.Cmdable, error) {
     }
 
     return redisClient, nil
+}
+
+func disconnectFromMySQL(db *sql.DB) {
+    var stats sql.DBStats
+    stats = db.Stats()
+
+    var maxCount int
+    for stats.InUse != 0 {
+        if maxCount == 10 {
+            break
+        }
+
+        stats = db.Stats()
+
+        fmt.Printf("Waiting on open mySQL connections: %d in use\n", stats.InUse)
+
+        maxCount += 1
+        time.Sleep(100 * time.Millisecond)
+    }
+
+    err := db.Close()
+    if err != nil {
+        panic(err)
+    }
+}
+
+func disconnectFromRedis(client redis.Cmdable) {
+    err := client.(*redis.Client).Close()
+    if err != nil {
+        panic(err)
+    }
 }
 
 func blockUntilSigterm() {

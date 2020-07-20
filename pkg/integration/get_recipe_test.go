@@ -7,10 +7,10 @@ import (
     "io/ioutil"
     "net/http"
 
-    "github.com/iplay88keys/my-recipe-library/pkg/api/users"
+    . "github.com/iplay88keys/my-recipe-library/pkg/helpers"
 
     "github.com/iplay88keys/my-recipe-library/pkg/api/recipes"
-    . "github.com/iplay88keys/my-recipe-library/pkg/helpers"
+    "github.com/iplay88keys/my-recipe-library/pkg/api/users"
     "github.com/iplay88keys/my-recipe-library/pkg/repositories"
 
     . "github.com/onsi/ginkgo"

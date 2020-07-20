@@ -6,6 +6,7 @@ import (
     "net/http"
     "os"
     "os/exec"
+    "syscall"
     "testing"
     "time"
 
@@ -32,6 +33,9 @@ var (
     port                  string
     client                *http.Client
     session               *gexec.Session
+
+    osStdout *os.File
+    osStderr *os.File
 )
 
 var _ = BeforeSuite(func() {
@@ -58,9 +62,18 @@ var _ = BeforeSuite(func() {
     client = &http.Client{
         Timeout: 10 * time.Second,
     }
+
+    osStdout = os.Stdout
+    osStderr = os.Stderr
+
+    os.Stdout = nil
+    os.Stderr = nil
 })
 
 var _ = AfterSuite(func() {
+    os.Stdout = osStdout
+    os.Stderr = osStderr
+
     gexec.CleanupBuildArtifacts()
 })
 
@@ -87,6 +100,6 @@ var _ = BeforeEach(func() {
 })
 
 var _ = AfterEach(func() {
-    session.Kill()
-    Eventually(session).Should(gexec.Exit())
+    session.Signal(syscall.SIGKILL)
+    Eventually(session, 200*time.Millisecond).Should(gexec.Exit())
 })

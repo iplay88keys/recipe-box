@@ -2,9 +2,11 @@ package users_test
 
 import (
     "bytes"
+    "encoding/json"
     "errors"
     "net/http"
-    "net/http/httptest"
+
+    "github.com/iplay88keys/my-recipe-library/pkg/api"
 
     "github.com/iplay88keys/my-recipe-library/pkg/token"
 
@@ -36,52 +38,24 @@ var _ = Describe("login", func() {
             "password": "Pa3$12345"
         }`)
 
-        req := httptest.NewRequest("POST", "/users/login", bytes.NewBuffer(body))
-        rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(users.Login(verify, createToken, storeToken).Handler)
+        req, err := http.NewRequest(http.MethodPost, "/users/login", bytes.NewBuffer(body))
+        Expect(err).ToNot(HaveOccurred())
 
-        handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusOK))
-        Expect(rr.Body.String()).To(MatchJSON(`{
+        resp := users.Login(verify, createToken, storeToken).Handle(&api.Request{
+            Req: req,
+        })
+
+        Expect(resp.StatusCode).To(Equal(http.StatusOK))
+
+        respBody, err := json.Marshal(resp.Body)
+        Expect(err).ToNot(HaveOccurred())
+        Expect(respBody).To(MatchJSON(`{
             "access_token": "access token",
             "refresh_token": "refresh token"
         }`))
     })
 
     It("returns unauthorized if the login fails due to bad credentials", func() {
-        verify := func(login, password string) (bool, int64, error) {
-            return false, 0, nil
-        }
-
-        createToken := func(userid int64) (*token.Details, error) {
-            return &token.Details{
-
-            }, nil
-        }
-
-        storeToken := func(userid int64, details *token.Details) error {
-            return nil
-        }
-
-        body := []byte(`{
-            "login": "username",
-            "password": "bad-password"
-        }`)
-
-        req := httptest.NewRequest("POST", "/users/login", bytes.NewBuffer(body))
-        rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(users.Login(verify, createToken, storeToken).Handler)
-
-        handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusUnauthorized))
-        Expect(rr.Body.String()).To(MatchJSON(`{
-            "errors": {
-                "alert": "Invalid login credentials"
-            }
-        }`))
-    })
-
-    It("returns a bad request if there is no body", func() {
         verify := func(login, password string) (bool, int64, error) {
             return false, 0, nil
         }
@@ -94,12 +68,50 @@ var _ = Describe("login", func() {
             return nil
         }
 
-        req := httptest.NewRequest("POST", "/users/login", nil)
-        rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(users.Login(verify, createToken, storeToken).Handler)
+        body := []byte(`{
+            "login": "username",
+            "password": "bad-password"
+        }`)
 
-        handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusBadRequest))
+        req, err := http.NewRequest(http.MethodPost, "/users/login", bytes.NewBuffer(body))
+        Expect(err).ToNot(HaveOccurred())
+
+        resp := users.Login(verify, createToken, storeToken).Handle(&api.Request{
+            Req: req,
+        })
+
+        Expect(resp.StatusCode).To(Equal(http.StatusUnauthorized))
+
+        respBody, err := json.Marshal(resp.Body)
+        Expect(err).ToNot(HaveOccurred())
+        Expect(respBody).To(MatchJSON(`{
+            "errors": {
+                "alert": "Invalid login credentials"
+            }
+        }`))
+    })
+
+    It("returns a bad request if the body is empty", func() {
+        verify := func(login, password string) (bool, int64, error) {
+            return false, 0, nil
+        }
+
+        createToken := func(userid int64) (*token.Details, error) {
+            return &token.Details{}, nil
+        }
+
+        storeToken := func(userid int64, details *token.Details) error {
+            return nil
+        }
+
+        req, err := http.NewRequest(http.MethodPost, "/users/login", bytes.NewBuffer([]byte("")))
+        Expect(err).ToNot(HaveOccurred())
+
+        resp := users.Login(verify, createToken, storeToken).Handle(&api.Request{
+            Req: req,
+        })
+
+        Expect(resp.StatusCode).To(Equal(http.StatusBadRequest))
     })
 
     It("returns an error if the login check fails", func() {
@@ -120,12 +132,14 @@ var _ = Describe("login", func() {
             "password": "bad-password"
         }`)
 
-        req := httptest.NewRequest("POST", "/users/login", bytes.NewBuffer(body))
-        rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(users.Login(verify, createToken, storeToken).Handler)
+        req, err := http.NewRequest(http.MethodPost, "/users/login", bytes.NewBuffer(body))
+        Expect(err).ToNot(HaveOccurred())
 
-        handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusInternalServerError))
+        resp := users.Login(verify, createToken, storeToken).Handle(&api.Request{
+            Req: req,
+        })
+
+        Expect(resp.StatusCode).To(Equal(http.StatusInternalServerError))
     })
 
     It("returns an error if the token creation fails", func() {
@@ -146,12 +160,14 @@ var _ = Describe("login", func() {
             "password": "bad-password"
         }`)
 
-        req := httptest.NewRequest("POST", "/users/login", bytes.NewBuffer(body))
-        rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(users.Login(verify, createToken, storeToken).Handler)
+        req, err := http.NewRequest(http.MethodPost, "/users/login", bytes.NewBuffer(body))
+        Expect(err).ToNot(HaveOccurred())
 
-        handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusInternalServerError))
+        resp := users.Login(verify, createToken, storeToken).Handle(&api.Request{
+            Req: req,
+        })
+
+        Expect(resp.StatusCode).To(Equal(http.StatusInternalServerError))
     })
 
     It("returns an error if the token storing fails", func() {
@@ -172,11 +188,13 @@ var _ = Describe("login", func() {
             "password": "bad-password"
         }`)
 
-        req := httptest.NewRequest("POST", "/users/login", bytes.NewBuffer(body))
-        rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(users.Login(verify, createToken, storeToken).Handler)
+        req, err := http.NewRequest(http.MethodPost, "/users/login", bytes.NewBuffer(body))
+        Expect(err).ToNot(HaveOccurred())
 
-        handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusInternalServerError))
+        resp := users.Login(verify, createToken, storeToken).Handle(&api.Request{
+            Req: req,
+        })
+
+        Expect(resp.StatusCode).To(Equal(http.StatusInternalServerError))
     })
 })

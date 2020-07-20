@@ -2,9 +2,11 @@ package users_test
 
 import (
     "bytes"
+    "encoding/json"
     "errors"
     "net/http"
-    "net/http/httptest"
+
+    "github.com/iplay88keys/my-recipe-library/pkg/api"
 
     "github.com/iplay88keys/my-recipe-library/pkg/api/users"
 
@@ -32,12 +34,14 @@ var _ = Describe("register", func() {
             "password": "Pa3$12345"
         }`)
 
-        req := httptest.NewRequest("POST", "/users/register", bytes.NewBuffer(body))
-        rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(users.Register(existsByUsername, existsByEmail, insertUser).Handler)
+        req, err := http.NewRequest(http.MethodPost, "/users/register", bytes.NewBuffer(body))
+        Expect(err).ToNot(HaveOccurred())
 
-        handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusOK))
+        resp := users.Register(existsByUsername, existsByEmail, insertUser).Handle(&api.Request{
+            Req: req,
+        })
+
+        Expect(resp.StatusCode).To(Equal(http.StatusOK))
     })
 
     It("returns validation info", func() {
@@ -59,13 +63,18 @@ var _ = Describe("register", func() {
             "password": ""
         }`)
 
-        req := httptest.NewRequest("POST", "/users/register", bytes.NewBuffer(body))
-        rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(users.Register(existsByUsername, existsByEmail, insertUser).Handler)
+        req, err := http.NewRequest(http.MethodPost, "/users/register", bytes.NewBuffer(body))
+        Expect(err).ToNot(HaveOccurred())
 
-        handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusBadRequest))
-        Expect(rr.Body.String()).To(MatchJSON(`{
+        resp := users.Register(existsByUsername, existsByEmail, insertUser).Handle(&api.Request{
+            Req: req,
+        })
+
+        Expect(resp.StatusCode).To(Equal(http.StatusBadRequest))
+
+        respBody, err := json.Marshal(resp.Body)
+        Expect(err).ToNot(HaveOccurred())
+        Expect(respBody).To(MatchJSON(`{
             "errors": {
                 "email": "Required",
                 "password": "Required",
@@ -93,13 +102,18 @@ var _ = Describe("register", func() {
             "password": "Pa3$12345"
         }`)
 
-        req := httptest.NewRequest("POST", "/users/register", bytes.NewBuffer(body))
-        rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(users.Register(existsByUsername, existsByEmail, insertUser).Handler)
+        req, err := http.NewRequest(http.MethodPost, "/users/register", bytes.NewBuffer(body))
+        Expect(err).ToNot(HaveOccurred())
 
-        handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusBadRequest))
-        Expect(rr.Body.String()).To(MatchJSON(`{
+        resp := users.Register(existsByUsername, existsByEmail, insertUser).Handle(&api.Request{
+            Req: req,
+        })
+
+        Expect(resp.StatusCode).To(Equal(http.StatusBadRequest))
+
+        respBody, err := json.Marshal(resp.Body)
+        Expect(err).ToNot(HaveOccurred())
+        Expect(respBody).To(MatchJSON(`{
             "errors": {
                 "username": "Username already in use"
             }
@@ -125,20 +139,25 @@ var _ = Describe("register", func() {
             "password": "Pa3$12345"
         }`)
 
-        req := httptest.NewRequest("POST", "/users/register", bytes.NewBuffer(body))
-        rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(users.Register(existsByUsername, existsByEmail, insertUser).Handler)
+        req, err := http.NewRequest(http.MethodPost, "/users/register", bytes.NewBuffer(body))
+        Expect(err).ToNot(HaveOccurred())
 
-        handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusBadRequest))
-        Expect(rr.Body.String()).To(MatchJSON(`{
+        resp := users.Register(existsByUsername, existsByEmail, insertUser).Handle(&api.Request{
+            Req: req,
+        })
+
+        Expect(resp.StatusCode).To(Equal(http.StatusBadRequest))
+
+        respBody, err := json.Marshal(resp.Body)
+        Expect(err).ToNot(HaveOccurred())
+        Expect(respBody).To(MatchJSON(`{
             "errors": {
                 "email": "Email already in use"
             }
         }`))
     })
 
-    It("returns bad request if there is no body", func() {
+    It("returns bad request if the body is empty", func() {
         existsByUsername := func(username string) (bool, error) {
             return false, nil
         }
@@ -151,12 +170,14 @@ var _ = Describe("register", func() {
             return -1, errors.New("some error")
         }
 
-        req := httptest.NewRequest("POST", "/users/register", nil)
-        rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(users.Register(existsByUsername, existsByEmail, insertUser).Handler)
+        req, err := http.NewRequest(http.MethodPost, "/users/register", bytes.NewBuffer([]byte("")))
+        Expect(err).ToNot(HaveOccurred())
 
-        handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusBadRequest))
+        resp := users.Register(existsByUsername, existsByEmail, insertUser).Handle(&api.Request{
+            Req: req,
+        })
+
+        Expect(resp.StatusCode).To(Equal(http.StatusBadRequest))
     })
 
     It("returns an error if the username check fails", func() {
@@ -178,12 +199,14 @@ var _ = Describe("register", func() {
             "password": "Pa3$12345"
         }`)
 
-        req := httptest.NewRequest("POST", "/users/register", bytes.NewBuffer(body))
-        rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(users.Register(existsByUsername, existsByEmail, insertUser).Handler)
+        req, err := http.NewRequest(http.MethodPost, "/users/register", bytes.NewBuffer(body))
+        Expect(err).ToNot(HaveOccurred())
 
-        handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusInternalServerError))
+        resp := users.Register(existsByUsername, existsByEmail, insertUser).Handle(&api.Request{
+            Req: req,
+        })
+
+        Expect(resp.StatusCode).To(Equal(http.StatusInternalServerError))
     })
 
     It("returns an error if the email check fails", func() {
@@ -205,12 +228,14 @@ var _ = Describe("register", func() {
             "password": "Pa3$12345"
         }`)
 
-        req := httptest.NewRequest("POST", "/users/register", bytes.NewBuffer(body))
-        rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(users.Register(existsByUsername, existsByEmail, insertUser).Handler)
+        req, err := http.NewRequest(http.MethodPost, "/users/register", bytes.NewBuffer(body))
+        Expect(err).ToNot(HaveOccurred())
 
-        handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusInternalServerError))
+        resp := users.Register(existsByUsername, existsByEmail, insertUser).Handle(&api.Request{
+            Req: req,
+        })
+
+        Expect(resp.StatusCode).To(Equal(http.StatusInternalServerError))
     })
 
     It("returns an error if the user insert fails", func() {
@@ -232,11 +257,13 @@ var _ = Describe("register", func() {
             "password": "Pa3$12345"
         }`)
 
-        req := httptest.NewRequest("POST", "/users/register", bytes.NewBuffer(body))
-        rr := httptest.NewRecorder()
-        handler := http.HandlerFunc(users.Register(existsByUsername, existsByEmail, insertUser).Handler)
+        req, err := http.NewRequest(http.MethodPost, "/users/register", bytes.NewBuffer(body))
+        Expect(err).ToNot(HaveOccurred())
 
-        handler.ServeHTTP(rr, req)
-        Expect(rr.Code).To(Equal(http.StatusInternalServerError))
+        resp := users.Register(existsByUsername, existsByEmail, insertUser).Handle(&api.Request{
+            Req: req,
+        })
+
+        Expect(resp.StatusCode).To(Equal(http.StatusInternalServerError))
     })
 })

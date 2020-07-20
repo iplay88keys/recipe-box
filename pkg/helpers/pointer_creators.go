@@ -9,5 +9,9 @@ func IntPointer(v int) *int {
 }
 
 func StringPointer(v string) *string {
+    if v == "" {
+        return nil
+    }
+
     return &v
 }
