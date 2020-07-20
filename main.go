@@ -2,6 +2,7 @@ package main
 
 import (
     "database/sql"
+    "encoding/json"
     "fmt"
     "os"
     "os/signal"
@@ -10,6 +11,8 @@ import (
     "syscall"
     "time"
 
+    "code.cloudfoundry.org/go-envstruct"
+    "github.com/GoogleCloudPlatform/cloudsql-proxy/proxy/dialers/mysql"
     "github.com/go-redis/redis"
 
     "github.com/iplay88keys/my-recipe-library/pkg/api"
@@ -21,51 +24,44 @@ import (
     _ "github.com/go-sql-driver/mysql"
 )
 
+type Config struct {
+    DatabaseCreds DBCreds `env:"DATABASE_CREDS, required"`
+    RedisURL      string  `env:"REDIS_URL,      required"`
+    AccessSecret  string  `env:"ACCESS_SECRET,  required"`
+    RefreshSecret string  `env:"REFRESH_SECRET, required"`
+    Port          string  `env:"PORT"`
+    Static        string  `env:"STATIC_DIR"`
+}
+
+type DBCreds struct {
+    URL          string `json:"url"`
+    InstanceName string `json:"gcloud_instance_name"`
+    DBName       string `json:"gcloud_db_name"`
+    User         string `json:"gcloud_user"`
+    Password     string `json:"gcloud_password"`
+}
+
+func (d *DBCreds) UnmarshalEnv(data string) error {
+    return json.Unmarshal([]byte(data), d)
+}
+
 func main() {
-    var (
-        databaseURL   string
-        redisURL      string
-        accessSecret  string
-        refreshSecret string
-    )
-    static := "ui/build"
-    port := "8080"
-
-    envPort := os.Getenv("PORT")
-    if envPort != "" {
-        port = envPort
+    config := Config{
+        Port:   "8080",
+        Static: "ui/build",
     }
 
-    envDatabaseURL := os.Getenv("DATABASE_URL")
-    if envDatabaseURL == "" {
-        panic("DATABASE_URL is required, formatted as: mysql://$USER:$PASSWORD@tcp($HOST:$PORT)/$DATABASE")
-    }
-    databaseURL = envDatabaseURL
-
-    envRedisURL := os.Getenv("REDIS_URL")
-    if envRedisURL == "" {
-        panic("REDIS_URL is required")
-    }
-    redisURL = envRedisURL
-
-    envAccessSecret := os.Getenv("ACCESS_SECRET")
-    if envAccessSecret == "" {
-        panic("ACCESS_SECRET is required")
-    }
-    accessSecret = envAccessSecret
-
-    envRefreshSecret := os.Getenv("REFRESH_SECRET")
-    if envRefreshSecret == "" {
-        panic("REFRESH_SECRET is required")
-    }
-    refreshSecret = envRefreshSecret
-
-    db, err := connectToMySQL(databaseURL)
+    err := envstruct.Load(&config)
     if err != nil {
         panic(err)
     }
 
-    redisClient, err := connectToRedis(redisURL)
+    db, err := connectToMySQL(&config)
+    if err != nil {
+        panic(err)
+    }
+
+    redisClient, err := connectToRedis(config.RedisURL)
     if err != nil {
         panic(err)
     }
@@ -76,11 +72,11 @@ func main() {
     usersRepo := repositories.NewUsersRepository(db)
 
     redisRepo := repositories.NewRedisRepository(redisClient)
-    tokenService := token.NewService(accessSecret, refreshSecret)
+    tokenService := token.NewService(config.AccessSecret, config.RefreshSecret)
 
     a := api.New(&api.Config{
-        Port:                  port,
-        StaticDir:             static,
+        Port:                  config.Port,
+        StaticDir:             config.Static,
         Validate:              tokenService.ValidateToken,
         RetrieveAccessDetails: redisRepo.RetrieveTokenDetails,
         Endpoints: []*api.Endpoint{
@@ -108,7 +104,7 @@ func main() {
         },
     })
 
-    fmt.Printf("Serving at http://localhost:%s\n", port)
+    fmt.Printf("Serving at http://localhost:%s\n", config.Port)
     fmt.Println("ctrl-c to quit")
     stopApi := a.Start()
 
@@ -119,15 +115,29 @@ func main() {
     blockUntilSigterm()
 }
 
-func connectToMySQL(databaseURL string) (*sql.DB, error) {
-    unquotedURL, err := strconv.Unquote(databaseURL)
-    if err == nil {
-        databaseURL = unquotedURL
-    }
+func connectToMySQL(config *Config) (db *sql.DB, err error) {
+    if config.DatabaseCreds.URL != "" {
+        var unquotedURL string
+        url := config.DatabaseCreds.URL
 
-    db, err := sql.Open("mysql", strings.TrimSpace(strings.TrimPrefix(databaseURL, "mysql://")))
-    if err != nil {
-        return nil, err
+        unquotedURL, err = strconv.Unquote(url)
+        if err == nil {
+            url = unquotedURL
+        }
+
+        db, err = sql.Open("mysql", strings.TrimSpace(strings.TrimPrefix(url, "mysql://")))
+        if err != nil {
+            return nil, err
+        }
+
+    } else {
+        cfg := mysql.Cfg(config.DatabaseCreds.InstanceName, config.DatabaseCreds.User, config.DatabaseCreds.Password)
+        cfg.DBName = config.DatabaseCreds.DBName
+
+        db, err = mysql.DialCfg(cfg)
+        if err != nil {
+            return nil, err
+        }
     }
 
     err = db.Ping()

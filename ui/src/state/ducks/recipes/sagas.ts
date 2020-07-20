@@ -34,8 +34,6 @@ export function* getRecipeSaga(action: ReturnType<typeof fetchRecipeAsync.reques
 }
 
 export function* createRecipeSaga(action: ReturnType<typeof createRecipeAsync.request>): Generator {
-    console.log("INSIDE CALL");
-
     try {
         const response = (yield call(Api.post, "/api/v1/recipes", JSON.stringify(action.payload))) as AxiosResponse;
 
