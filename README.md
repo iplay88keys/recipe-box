@@ -2,6 +2,13 @@
 
 A React Redux website for storing recipes
 
+Built with:
+* Golang
+* Typescript
+* React/Redux
+* Mysql
+* Redis
+
 # Local Development
 ## Requirements
 * Docker
