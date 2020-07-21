@@ -151,7 +151,7 @@ func logRequest(startTime, endTime time.Time, req *Request, resp *Response) {
         userID = strconv.FormatInt(req.UserID, 10)
     }
 
-    fmt.Printf("%s [path=%s] [userID=%s] [start=%s] [end=%s] [latency=%s] [status=%d]\n",
+    fmt.Printf("[API] %s [path=%s] [userID=%s] [start=%s] [end=%s] [latency=%s] [status=%d]\n",
         req.Req.Method,
         req.Req.URL.Path,
         userID,
