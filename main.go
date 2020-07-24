@@ -2,7 +2,6 @@ package main
 
 import (
     "database/sql"
-    "encoding/json"
     "fmt"
     "os"
     "os/signal"
@@ -18,50 +17,30 @@ import (
     "github.com/iplay88keys/my-recipe-library/pkg/api"
     "github.com/iplay88keys/my-recipe-library/pkg/api/recipes"
     "github.com/iplay88keys/my-recipe-library/pkg/api/users"
+    "github.com/iplay88keys/my-recipe-library/pkg/config"
     "github.com/iplay88keys/my-recipe-library/pkg/repositories"
     "github.com/iplay88keys/my-recipe-library/pkg/token"
 
     _ "github.com/go-sql-driver/mysql"
 )
 
-type Config struct {
-    DatabaseCreds DBCreds `env:"DATABASE_CREDS, required"`
-    RedisURL      string  `env:"REDIS_URL,      required"`
-    AccessSecret  string  `env:"ACCESS_SECRET,  required"`
-    RefreshSecret string  `env:"REFRESH_SECRET, required"`
-    Port          string  `env:"PORT"`
-    Static        string  `env:"STATIC_DIR"`
-}
-
-type DBCreds struct {
-    URL          string `json:"url"`
-    InstanceName string `json:"gcloud_instance_name"`
-    DBName       string `json:"gcloud_db_name"`
-    User         string `json:"gcloud_user"`
-    Password     string `json:"gcloud_password"`
-}
-
-func (d *DBCreds) UnmarshalEnv(data string) error {
-    return json.Unmarshal([]byte(data), d)
-}
-
 func main() {
-    config := Config{
+    cfg := config.Config{
         Port:   "8080",
         Static: "ui/build",
     }
 
-    err := envstruct.Load(&config)
+    err := envstruct.Load(&cfg)
     if err != nil {
         panic(err)
     }
 
-    db, err := connectToMySQL(&config)
+    db, err := connectToMySQL(&config.MySQLCreds{})
     if err != nil {
         panic(err)
     }
 
-    redisClient, err := connectToRedis(config.RedisURL)
+    redisClient, err := connectToRedis(cfg.RedisURL)
     if err != nil {
         panic(err)
     }
@@ -72,11 +51,11 @@ func main() {
     usersRepo := repositories.NewUsersRepository(db)
 
     redisRepo := repositories.NewRedisRepository(redisClient)
-    tokenService := token.NewService(config.AccessSecret, config.RefreshSecret)
+    tokenService := token.NewService(cfg.AccessSecret, cfg.RefreshSecret)
 
     a := api.New(&api.Config{
-        Port:                  config.Port,
-        StaticDir:             config.Static,
+        Port:                  cfg.Port,
+        StaticDir:             cfg.Static,
         Validate:              tokenService.ValidateToken,
         RetrieveAccessDetails: redisRepo.RetrieveTokenDetails,
         Endpoints: []*api.Endpoint{
@@ -104,8 +83,7 @@ func main() {
         },
     })
 
-    fmt.Printf("Serving at http://localhost:%s\n", config.Port)
-    fmt.Println("ctrl-c to quit")
+    fmt.Printf("Serving at http://localhost:%s\n", cfg.Port)
     stopApi := a.Start()
 
     defer stopApi()
@@ -115,10 +93,10 @@ func main() {
     blockUntilSigterm()
 }
 
-func connectToMySQL(config *Config) (db *sql.DB, err error) {
-    if config.DatabaseCreds.URL != "" {
+func connectToMySQL(config *config.MySQLCreds) (db *sql.DB, err error) {
+    if config.URL != "" {
         var unquotedURL string
-        url := config.DatabaseCreds.URL
+        url := config.URL
 
         unquotedURL, err = strconv.Unquote(url)
         if err == nil {
@@ -131,8 +109,8 @@ func connectToMySQL(config *Config) (db *sql.DB, err error) {
         }
 
     } else {
-        cfg := mysql.Cfg(config.DatabaseCreds.InstanceName, config.DatabaseCreds.User, config.DatabaseCreds.Password)
-        cfg.DBName = config.DatabaseCreds.DBName
+        cfg := mysql.Cfg(config.InstanceName, config.User, config.Password)
+        cfg.DBName = config.DBName
 
         db, err = mysql.DialCfg(cfg)
         if err != nil {
